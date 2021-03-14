@@ -140,8 +140,17 @@ function GetPlayersFromNightclubsExcluding(clubId) {
 function AcceptEnterRequest(source, club) {
     console.log('accepting enter req')
     AddPlayerToNightclubSession(source, club);
-    var Players = GetPlayersFromNightclubsExcluding(club);
+    var Players = GetPlayersFromNightclubsExcluding(club.id);
     emitNet("Nightclubs:EnterRequestAccepted", source, JSON.stringify(Players));
+    var Time = 0;
+    Players.forEach(async p => {
+        
+        console.log(`Sending request to hide ${source} ${GetPlayerName(source)} (player who just entered) to player ${p.id} (${GetPlayerName(p)})`);
+        emitNet("Nightclubs:HidePlayer", p.id, source);
+
+        Time += 10;
+        await Wait(Time)
+    });
 }
 
 function RejectEnterRequest(source, club) {
