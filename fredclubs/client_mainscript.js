@@ -574,8 +574,8 @@ RegisterCommand('clubsdebug', () => {
         console.log(`DebugLogsEnabled = true`);
     }
 });
-ReigsterCommand('pedheading', () => {
+RegisterCommand('pedheading', () => {
     BeginTextCommandThefeedPost("STRING");
     AddTextComponentSubstringPlayerName(String(GetEntityHeading(PlayerPedId())));
     EndTextCommandThefeedPostTicker(true, true);
-})
+});
