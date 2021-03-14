@@ -16,3 +16,5 @@ async function loadCayo(){
         await wait(5000)
     }
 }
+
+loadCayo()
