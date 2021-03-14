@@ -28,11 +28,8 @@ let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
 async function dmNotifRec(player, message){
-    let handle = RegisterPedheadshot(PlayerPedId())
-    while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
-        await WAIT(0)
-    }
-    let txd = GetPedheadshotTxdString(handle)
+    let txdDict = 'mpmissmarkers256'
+    let txtName = 'tennis_icon'
     BeginTextCommandThefeedPost('DM_RECEIVED');
     AddTextComponentSubstringPlayerName(message)
     ThefeedNextPostBackgroundColor(200)
@@ -40,16 +37,13 @@ async function dmNotifRec(player, message){
     let subtitle = 'DM Received'
     let iconType = 1
     let flash = false
-    EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
+    EndTextCommandThefeedPostMessagetext(txdDict, txtName, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
 }
 
 async function dmNotifSent(player, message){
-    let handle = RegisterPedheadshot(PlayerPedId())
-    while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
-        await WAIT(0)
-    }
-    let txd = GetPedheadshotTxdString(handle)
+    let txdDict = 'mpmissmarkers256'
+    let txtName = 'tennis_icon'
     BeginTextCommandThefeedPost('DM_SENT');
     AddTextComponentSubstringPlayerName(message)
     ThefeedNextPostBackgroundColor(200)
@@ -57,7 +51,7 @@ async function dmNotifSent(player, message){
     let subtitle = 'DM Sent'
     let iconType = 1
     let flash = false
-    EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
+    EndTextCommandThefeedPostMessagetext(txdDict, txtName, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
 }
 
