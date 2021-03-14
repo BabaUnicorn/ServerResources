@@ -27,7 +27,7 @@ var NightClubs = [];
 AddTextEntry("NightclubsNearbyClubHelpText", `Press ${EnterControlButton} to enter this nightclub`);
 AddTextEntry("NightclubsNearbyClubExitHelpText", `Press ${EnterControlButton} to exit this nightclub`);
 
-console.log("HELLO FROM REPO")
+console.log("HELLO FROM REPO 2")
 
 function SetTickRate(tickRate) {
     TickRate = tickRate;
