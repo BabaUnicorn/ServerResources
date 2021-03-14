@@ -144,7 +144,7 @@ function AcceptEnterRequest(source, club) {
     emitNet("Nightclubs:EnterRequestAccepted", source, JSON.stringify(Players));
     var Time = 0;
     Players.forEach(async p => {
-        
+
         console.log(`Sending request to hide ${source} ${GetPlayerName(source)} (player who just entered) to player ${p.id} (${GetPlayerName(p)})`);
         emitNet("Nightclubs:HidePlayer", p.id, source);
 
@@ -200,45 +200,32 @@ onNet("Nightclubs:ExitRequest", (clubString) => {
 });
 
 function CMD (source, args) {
-    if (args.length < 1) return emitNet(source, "chat:addMessage", {
+    if (args.length < 1) return emitNet("chat:addMessage", source, {
         args: [
             "^1Error", "Not enough arguments"
         ]
     });
 
     switch (args[0].toLowerCase()) {
-        case 'enter':
-            if (!args[1] || !args[2]) return emitNet(source, "chat:addMessage", {
-                args: ["^1Syntax", "/club enter <club name>"]
+        case 'exit':
+            if (!GetNightclubPlayerIsIn(source)) return emitNet('chat:addMessage');
+            emitNet("Nightclubs:ExitCurrentNightClub", source, {
+                args: [
+                    "^1Error", "You aren't inside any nightclubs"
+                ]
             });
-
-            var club = NightClubs.find(nc => {
-                if (!isNaN(args.slice(1).join(" "))) {
-                    return nc.id === parseInt(args[1]);
-                } else {
-                    return nc.name.replace(/ /g, '').toLowerCase().includes(args.slice(1).join('').toLowerCase());
-                }
-            });
-
-            if (!club) {
-                return emitNet(source, "chat:addMessage", {
-                    args: ["^1Error", "Couldn't find a nightclub with such id."]
-                });
-            }
-
-            AcceptEnterRequest(source, club);
-        break;
-        case 'clubinfo':
-            console.log(GetNightclubPlayerIsIn(source));
         break;
     }
 }
 
 RegisterCommand('club', CMD);
+RegisterCommand('clubs', CMD);
+RegisterCommand('nightclub', CMD);
+RegisterCommand('nightclubs', CMD);
 /*RegisterCommand('clubseval', (source, args) => {
     const evaled = eval(args.join(" "));
     console.log(evaled)
-})*/
+})
 RegisterCommand('addfakeplayer', (source, args) => {
     AddPlayerToNightclubSession(parseInt(args[0]), {id: parseInt(args[1])});
-})
+})*/
