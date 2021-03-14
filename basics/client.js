@@ -27,7 +27,7 @@ emit('chat:addSuggestion', '/dm', 'Send a private message to a player', [{name: 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
-async function dmNotifRec(player, message, headshot){
+async function dmNotifRec(player, message){
     let handle = RegisterPedheadshotTransparent(PlayerPedId())
     while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
@@ -44,7 +44,7 @@ async function dmNotifRec(player, message, headshot){
     UnregisterPedheadshot(handle)
 }
 
-async function dmNotifSent(player, message, headshot){
+async function dmNotifSent(player, message){
     let handle = RegisterPedheadshotTransparent(PlayerPedId())
     while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
@@ -61,12 +61,12 @@ async function dmNotifSent(player, message, headshot){
     UnregisterPedheadshot(handle)
 }
 
-onNet('louBasics:dmNotifRec', (player, message, headshot) => {
-    dmNotifRec(player, message, headshot);
+onNet('louBasics:dmNotifRec', (player, message) => {
+    dmNotifRec(player, message);
 })
 
-onNet('louBasics:dmNotifSent', (player, message, headshot) => {
-    dmNotifSent(player, message, headshot);
+onNet('louBasics:dmNotifSent', (player, message) => {
+    dmNotifSent(player, message);
 })
 
 function tpNoArgs(){
