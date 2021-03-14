@@ -65,6 +65,7 @@ RequestNightClubsFromServer();
 
     function DebugLog(text) {
         if (DebugLogsEnabled) {
+            var date = new Date();
             var time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
             console.log(`^6${time} Debug: ^0${text}`);
         }
