@@ -45,7 +45,7 @@ async function dmNotifRec(player, message, headshot){
 }
 
 async function dmNotifSent(player, message, headshot){
-    let handle = RegisterPedheadshotTransparent(headshot)
+    let handle = RegisterPedheadshotTransparent(GetPlayerPed(GetPlayerFromServerId(player)))
     while(!IsPedheadshotReady(handle)){
         await WAIT(0)
     }
