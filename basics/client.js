@@ -35,10 +35,10 @@ async function dmNotifRec(player, message){
     let txd = GetPedheadshotTxdString(handle)
     BeginTextCommandThefeedPost('DM_RECEIVED');
     AddTextComponentSubstringPlayerName(message)
-    ThefeedNextPostBackgroundColor(110)
+    ThefeedNextPostBackgroundColor(200)
     let title = player
     let subtitle = 'DM Received'
-    let iconType = 0
+    let iconType = 1
     let flash = false
     EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
@@ -52,10 +52,10 @@ async function dmNotifSent(player, message){
     let txd = GetPedheadshotTxdString(handle)
     BeginTextCommandThefeedPost('DM_SENT');
     AddTextComponentSubstringPlayerName(message)
-    ThefeedNextPostBackgroundColor(110)
+    ThefeedNextPostBackgroundColor(200)
     let title = player
     let subtitle = 'DM Sent'
-    let iconType = 0
+    let iconType = 1
     let flash = false
     EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
