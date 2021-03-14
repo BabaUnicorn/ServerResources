@@ -1,16 +1,22 @@
-local islandVector = vector3(4840.571, -5174.425, 2.0)
+function ToggleIsland(enabled)
+  Citizen.InvokeNative(0x9A9D1BA639675CF1, "HeistIsland", enabled) -- Toggle island gta5 level
+  Citizen.InvokeNative(0x5E1460624D194A38, enabled) -- Toggle island minimap
+end
 
-Citizen.CreateThread(function()
-    while true do
-        local playerCoords = GetEntityCoords(PlayerPedId())
-        local distance = #(playerCoords - islandVector)
-        if distance < 2000 then
-            Citizen.InvokeNative('0x9A9D1BA639675CF1', 'HeistIsland', true)
-            Citizen.InvokeNative('0x5E1460624D194A38', true)
+function ToggleIslandPathNodes(enabled)
+  Citizen.InvokeNative(0xF74B1FFA4A15FBEA, enabled) -- Toggle island path nodes
+end
+
+local IslandIsEnabled = false
+
+RegisterCommand('cayo', function()
+        if IslandIsEnabled then
+            IslandIsEnabled = true
+            ToggleIsland(IslandIsEnabled)
+            ToggleIslandPathNodes(IslandIsEnabled)
         else
-            Citizen.InvokeNative('0x9A9D1BA639675CF1', 'HeistIsland', false)
-            Citizen.InvokeNative('0x5E1460624D194A38', true)
+            IslandIsEnabled = false
+            ToggleIsland(IslandIsEnabled)
+            ToggleIslandPathNodes(IslandIsEnabled)            
         end
-        Citizen.Wait(5000)
-    end
 end)
