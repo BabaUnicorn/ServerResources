@@ -95,5 +95,13 @@ RegisterCommand('dm', (source, args) => {
     } else {
         emitNet('louBasics:dmNotifRec', idResult, GetPlayerName(source), msgContent);
         emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent);
+        RegisterCommand('r', (source, args) => {
+            if(!idResult || idResult == null || !msgContent || msgContent == null || msgContent == ''){
+                emitNet('louBasics:dmNoArgs', source);
+            } else {
+                emitNet('louBasics:dmNotifRec', idResult, GetPlayerName(source), msgContent);
+                emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent);
+            }
+        })
     }
 })
