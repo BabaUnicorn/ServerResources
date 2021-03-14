@@ -28,7 +28,7 @@ let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
 async function dmNotifRec(player, message){
-    let handle = RegisterPedheadshot(PlayerPedId())
+    let handle = RegisterPedheadshotTransparent(PlayerPedId())
     while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
     }
@@ -45,7 +45,7 @@ async function dmNotifRec(player, message){
 }
 
 async function dmNotifSent(player, message){
-    let handle = RegisterPedheadshot(PlayerPedId())
+    let handle = RegisterPedheadshotTransparent(PlayerPedId())
     while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
     }
