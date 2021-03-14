@@ -47,6 +47,7 @@ async function dmNotifRec(player, message, headshot){
 async function dmNotifSent(player, message, headshot){
     let handle = RegisterPedheadshotTransparent(PlayerPedId())
     while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
+        console.log('cant get headshot')
         await WAIT(0)
     }
     let txd = GetPedheadshotTxdString(handle)
