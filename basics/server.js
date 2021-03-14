@@ -82,8 +82,7 @@ RegisterCommand('dm', (source, args) => {
     if(!idResult || idResult == null || !msgContent || msgContent == null || msgContent == ''){
         emitNet('louBasics:dmNoArgs', source);
     } else {
-        let recHeadshot = GetPlayerPed(idResult)
-        emitNet('louBasics:dmNotifRec', idResult, GetPlayerName(source), msgContent, recHeadshot);
-        emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent, recHeadshot);
+        emitNet('louBasics:dmNotifRec', idResult, GetPlayerName(source), msgContent);
+        emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent);
     }
 })
