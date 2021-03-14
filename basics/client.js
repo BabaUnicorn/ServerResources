@@ -29,7 +29,7 @@ let ped = PlayerPedId();
 
 async function dmNotifRec(player, message, headshot){
     let handle = RegisterPedheadshotTransparent(PlayerPedId())
-    while(!IsPedheadshotReady(handle) || !IsPedHeadshotValid(handle)){
+    while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
     }
     let txd = GetPedheadshotTxdString(handle)
@@ -46,7 +46,7 @@ async function dmNotifRec(player, message, headshot){
 
 async function dmNotifSent(player, message, headshot){
     let handle = RegisterPedheadshotTransparent(PlayerPedId())
-    while(!IsPedheadshotReady(handle) || !IsPedHeadshotValid(handle)){
+    while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
     }
     let txd = GetPedheadshotTxdString(handle)
