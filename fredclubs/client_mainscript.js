@@ -17,6 +17,7 @@ var LastClub2 = null;
 var LastCheckpoint = null;
 var ExitCheckpoint = null;
 var MinimapPositionLocked = false;
+var DebugLogsEnabled = false;
 var ClubInteriorId = 271617;
 var ActiveInteriorEntitySets = [];
 var ConcealedPlayers = [];
@@ -62,7 +63,14 @@ RequestNightClubsFromServer();
 
     if (ClubsEnabled) SetClubBlips(NightClubs);
 
-    function GetNightclubById (id) {
+    function DebugLog(text) {
+        if (DebugLogsEnabled) {
+            var time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+            console.log(`^6${time} Debug: ^0${text}`);
+        }
+    }
+
+    function GetNightclubById(id) {
         if (!id) return false;
 
         return NightClubs.find(n => n.id === id);
@@ -71,7 +79,6 @@ RequestNightClubsFromServer();
     function Get3dDistance (x1, y1, z1, x2, y2, z2) {
         /*console.log (`${x1} ${y1} ${z1}`)
         console.log (`${x2} ${y2} ${z2}`)*/
-
 		var resX = x1 - x2;
 		var resY = y1 - y2;
 		var resZ = z1 - z2;
@@ -103,14 +110,14 @@ RequestNightClubsFromServer();
     function RemoveAllHiddenPlayers() {
         ConcealedPlayers.forEach(async cp => {
             NetworkConcealPlayer(cp, false);
-            console.log('removiong hidden player ' + cp)
+            DebugLog('removing hidden player ' + cp)
             await Wait(0);
         });
         ConcealedPlayers.length = 0;
     }
 
     function JustEnteredNightclubNearbyScope(club) {
-        console.log(`we just entered scope of ${club.id}`);
+        DebugLog(`we just entered scope of ${club.id}`);
 
         var color = [113, 200, 255, 255];
         if (club.markerColor && (club.markerColor.length && club.markerColor.length == 4)) color = club.markerColor;
@@ -119,18 +126,18 @@ RequestNightClubsFromServer();
     }
 
     function JustExitedNightclubNearbyScope(club) {
-        console.log(`we just exited scope of ${club.id}`)
+        DebugLog(`we just exited scope of ${club.id}`)
         if (LastCheckpoint) {
             DeleteCheckpoint(LastCheckpoint);
         }
     }
 
     function JustEnteredNightclubEnterScope(club) {
-        console.log(`we just entered enter scope of ${club.id}`)
+        DebugLog(`we just entered enter scope of ${club.id}`)
     }
 
     function JustExitedNightclubEnterScope(club) {
-        console.log(`we just exited enter scope of ${club.id}`)
+        DebugLog(`we just exited enter scope of ${club.id}`)
     }
 
     var HasPrepared = false;
@@ -244,6 +251,8 @@ RequestNightClubsFromServer();
         await Wait(500);
 
         RefreshInterior(ClubInteriorId);
+        DebugLog(`Refreshed interior ${ClubInteriorId}. Active Interior sets:`);
+        DebugLog(ActiveInteriorEntitySets);
 
         HasPrepared = true;
         setTimeout(() => {
@@ -257,7 +266,7 @@ RequestNightClubsFromServer();
 
     function RestartInterior() {
         ActiveInteriorEntitySets.forEach(async set => {
-            //console.log(`Deactivating ${set}`)
+            DebugLog(`Deactivating interior (${ClubInteriorId}) entity set ${set}`)
             DeactivateInteriorEntitySet(ClubInteriorId, set);
             await Wait(10);
         });
@@ -275,16 +284,19 @@ RequestNightClubsFromServer();
 
         switch (response.toLowerCase()) {
             case 'timeout':
+                DebugLog(`NetworkOnResponse: timeout`);
                 StopLoadingScreen();
                 EnteringClub = null;
                 BusyspinnerOff();
             break;
             case 'rejected':
+                DebugLog(`NetworkOnResponse: rejected`);
                 StopLoadingScreen();
                 EnteringClub = null;
                 BusyspinnerOff();            
             break;
             case 'accepted':
+                DebugLog(`NetworkOnResponse: accepted`);
                 EnteringClub = null;
                 InsideClub = extra;
 
@@ -309,6 +321,7 @@ RequestNightClubsFromServer();
                     await Wait(500);
                 }
 
+                DebugLog(`Preparing nightclub interior`);
                 await PrepareNightclubInterior(extra);
                 while (!HasInteriorPrepared()) {
                     await Wait(100);
@@ -333,12 +346,11 @@ RequestNightClubsFromServer();
                     extra2.forEach(async player => {
                         var Player = GetPlayerFromServerId(player.id);
                         if (Player !== PlayerId()) {
-                            console.log(player.id)
-                            console.log(`playerName = ${Player}`)
+                            DebugLog(`Player's server ID = ${player.id}`)
+                            DebugLog(`Player's local ID = ${Player}`);
+                            DebugLog('(extra2.forEach) Hiding player ' + Player);
 
                             if (Player) HidePlayer(Player);
-
-                            console.log('(extra2.forEach) Hiding player ' + Player);
                         }
 
                         await Wait(30);
@@ -355,6 +367,7 @@ RequestNightClubsFromServer();
 
     async function NetworkRequestEntry (Club) {
         if (!Club) return false;
+        DebugLog(`NetworkRequestEntry: Requesting entry`);
 
         Club = GetNightclubById(Club);
         EnteringClub = Club;
@@ -459,9 +472,9 @@ RequestNightClubsFromServer();
 		});
     }
 
-    RegisterCommand('exit', () => {
-        NetworkRequestExit()
-    })
+    onNet("Nightclubs:ExitCurrentNightClub", () => {
+        ExitNightclub(InsideClub);
+    });
 
     on('onResourceStop', (resource) => {
         if (GetCurrentResourceName() === resource) {
@@ -475,9 +488,9 @@ RequestNightClubsFromServer();
         
         if (playerServerId !== PlayerId()) HidePlayer(GetPlayerFromServerId(playerServerId));
 
-        console.log("Hid player (Nightclubs:HidePlayer)")
-        console.log(playerServerId)
-        console.log(GetPlayerFromServerId(playerServerId))
+        DebugLog("Hid player (Nightclubs:HidePlayer)")
+        DebugLog(playerServerId)
+        DebugLog(GetPlayerFromServerId(playerServerId))
     });
 
     while (true) {
@@ -550,3 +563,13 @@ RequestNightClubsFromServer();
         await Wait();
     }
 })();
+
+RegisterCommand('clubsdebug', () => {
+    if (DebugLogsEnabled) {
+        DebugLogsEnabled = false;
+        console.log(`DebugLogsEnabled = false`);
+    } else {
+        DebugLogsEnabled = true;
+        console.log(`DebugLogsEnabled = true`);
+    }
+})
