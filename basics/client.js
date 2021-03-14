@@ -14,6 +14,8 @@ AddTextEntry('NO_RGB', '~r~RGB values are invalid.~n~~h~Usage:~s~ /vcolor 0-255 
 AddTextEntry('DM_NO_ARGS', '~r~Server ID is either invalid, not provided or message is missing!~n~~h~Usage:~s~ /dm id message');
 AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
+AddTextEntry('JOIN_MSG', '~a~ ~g~joined~s~');
+AddTextEntry('LEAVE_MSG', '~a~ ~g~left~s~');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
@@ -26,6 +28,26 @@ emit('chat:addSuggestion', '/dm', 'Send a private message to a player', [{name: 
 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
+
+function joinMsg(name){
+    BeginTextCommandThefeedPost('JOIN_MSG');
+    AddTextComponentSubstringPlayerName(name)
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+onNet('louBasics:joinMsg', (name) => {
+    joinMsg(name)
+})
+
+function leaveMsg(name){
+    BeginTextCommandThefeedPost('LEAVE_MSG');
+    AddTextComponentSubstringPlayerName(name)
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+onNet('louBasics:leaveMsg', (name) => {
+    leaveMsg(name)
+})
 
 async function dmNotifRec(player, message){
     let txdDict = 'shared'
