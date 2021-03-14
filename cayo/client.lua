@@ -20,3 +20,5 @@ RegisterCommand('cayo', function()
             ToggleIslandPathNodes(IslandIsEnabled)            
         end
 end)
+
+print('bababitch')
