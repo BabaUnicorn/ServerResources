@@ -28,8 +28,12 @@ let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
 async function dmNotifRec(player, message){
-    let txdDict = 'mprpsymbol'
-    let txtName = 'rp'
+    let txdDict = 'mpmissmarkers256'
+    let txtName = 'tennis_icon'
+    RequestStreamedTextureDict(txdDict)
+    while(!HasStreamedTextureDictLoaded){
+        await WAIT(0)
+    }
     BeginTextCommandThefeedPost('DM_RECEIVED');
     AddTextComponentSubstringPlayerName(message)
     ThefeedNextPostBackgroundColor(200)
@@ -38,12 +42,15 @@ async function dmNotifRec(player, message){
     let iconType = 1
     let flash = false
     EndTextCommandThefeedPostMessagetext(txdDict, txtName, flash, iconType, title, subtitle)
-    UnregisterPedheadshot(handle)
 }
 
 async function dmNotifSent(player, message){
     let txdDict = 'mpmissmarkers256'
     let txtName = 'tennis_icon'
+    RequestStreamedTextureDict(txdDict)
+    while(!HasStreamedTextureDictLoaded){
+        await WAIT(0)
+    }
     BeginTextCommandThefeedPost('DM_SENT');
     AddTextComponentSubstringPlayerName(message)
     ThefeedNextPostBackgroundColor(200)
@@ -52,7 +59,6 @@ async function dmNotifSent(player, message){
     let iconType = 1
     let flash = false
     EndTextCommandThefeedPostMessagetext(txdDict, txtName, flash, iconType, title, subtitle)
-    UnregisterPedheadshot(handle)
 }
 
 onNet('louBasics:dmNotifRec', (player, message) => {
