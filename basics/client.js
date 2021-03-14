@@ -199,7 +199,6 @@ RegisterCommand('v', async (source, args, raw) => {
   const hash = GetHashKey(model);
   if (!IsModelInCdimage(hash) || !IsModelAVehicle(hash)){
     modelNotFoundPopup();
-    emitNet('louBasics:spawnFailed');
   }
   RequestModel(hash);
   while (!HasModelLoaded(hash)){
@@ -216,7 +215,6 @@ RegisterCommand('v', async (source, args, raw) => {
   BeginTextCommandThefeedPost("STRING");
   AddTextComponentSubstringPlayerName(`~h~Vehicle ~g~${model}~s~ has been spawned.`);
   EndTextCommandThefeedPostTicker(true, false);
-  emitNet('louBasics:spawnSucceeded');
 })
 
 RegisterCommand('dv', () => {
@@ -224,11 +222,9 @@ RegisterCommand('dv', () => {
     let vehicleToDelete = GetVehiclePedIsIn(ped, true)
     if(!IsPedInAnyVehicle(ped, true)){
         noVehicle();
-        emitNet('louBasics:dvFailed');
     } else {
         DeleteEntity(vehicleToDelete);
         vehicleDeleted();
-        emitNet('louBasics:dvSucceeded');
     }
 })
 
@@ -237,13 +233,11 @@ RegisterCommand('fix', () => {
     let vehicleToFix = GetVehiclePedIsIn(ped, false);
     if(!IsPedInAnyVehicle(ped, true)){
         noVehicle();
-        emitNet('louBasics:fixFailed');
     } else {
         SetVehicleFixed(vehicleToFix);
         SetVehicleEngineHealth(vehicleToFix, 1000);
         SetVehicleEngineOn(vehicleToFix, true, true)
         vehicleToFixPopup();
-        emitNet('louBasics:fixSucceeded');
     }
 });
 
@@ -259,6 +253,5 @@ RegisterCommand('vcolor', (source, args, r, g, b) => {
     } else {
         SetVehicleCustomPrimaryColour(veh, r, g, b)
         SetVehicleCustomSecondaryColour(veh, r, g, b)
-        emitNet('louBasics:vcolorSucceeded')
     }
 })
