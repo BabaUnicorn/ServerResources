@@ -79,10 +79,10 @@ RegisterCommand('dm', (source, args) => {
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
     let msgContent = args.slice(1).join(" ");
-    let recHeadshot = GetPlayerPed(idResult)
     if(!idResult || idResult == null || !msgContent || msgContent == null || msgContent == ''){
         emitNet('louBasics:dmNoArgs', source);
     } else {
+        let recHeadshot = GetPlayerPed(idResult)
         emitNet('louBasics:dmNotifRec', idResult, GetPlayerName(source), msgContent, recHeadshot);
         emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent, recHeadshot);
     }
