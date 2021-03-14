@@ -15,7 +15,7 @@ AddTextEntry('DM_NO_ARGS', '~r~Server ID is either invalid, not provided or mess
 AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
 AddTextEntry('JOIN_MSG', '~a~ ~g~joined~s~');
-AddTextEntry('LEAVE_MSG', '~a~ ~g~left~s~');
+AddTextEntry('LEAVE_MSG', '~a~ ~r~left~s~');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
