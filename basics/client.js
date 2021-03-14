@@ -28,8 +28,8 @@ let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
 async function dmNotifRec(player, message){
-    let txdDict = 'mpawardheists'
-    let txtName = 'thepostman'
+    let txdDict = 'shared'
+    let txtName = 'info_icon_32'
     RequestStreamedTextureDict(txdDict)
     while(!HasStreamedTextureDictLoaded){
         await WAIT(0)
@@ -45,8 +45,8 @@ async function dmNotifRec(player, message){
 }
 
 async function dmNotifSent(player, message){
-    let txdDict = 'mpawardheists'
-    let txtName = 'thepostman'
+    let txdDict = 'shared'
+    let txtName = 'info_icon_32'
     RequestStreamedTextureDict(txdDict)
     while(!HasStreamedTextureDictLoaded){
         await WAIT(0)
