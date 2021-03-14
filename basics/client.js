@@ -28,8 +28,8 @@ let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
 async function dmNotifRec(player, message){
-    let txdDict = 'mpmissmarkers256'
-    let txtName = 'tennis_icon'
+    let txdDict = 'mprpsymbol'
+    let txtName = 'rp'
     BeginTextCommandThefeedPost('DM_RECEIVED');
     AddTextComponentSubstringPlayerName(message)
     ThefeedNextPostBackgroundColor(200)
