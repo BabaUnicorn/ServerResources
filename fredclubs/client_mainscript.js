@@ -6,7 +6,7 @@ var PedIdUpdateTickFrequency = 100; // every 100 ticks
 var PedIdUpdateTickCount = 0;
 var PlayerPedCoords = GetEntityCoords(PedId);
 var PlayerPedCoordsUpdateTickCount = 0;
-var PlayerPedCoordsUpdateTickFrequency = 100;
+var PlayerPedCoordsUpdateTickFrequency = 90;
 var EnterControlType = 0;
 var EnterControlIndex = 51;
 var EnterControlButton = "~INPUT_CONTEXT~";
@@ -573,4 +573,9 @@ RegisterCommand('clubsdebug', () => {
         DebugLogsEnabled = true;
         console.log(`DebugLogsEnabled = true`);
     }
+});
+ReigsterCommand('pedheading', () => {
+    BeginTextCommandThefeedPost("STRING");
+    AddTextComponentSubstringPlayerName(String(GetEntityHeading(PlayerPedId())));
+    EndTextCommandThefeedPostTicker(true, true);
 })
