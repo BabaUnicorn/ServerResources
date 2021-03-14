@@ -28,35 +28,35 @@ let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
 async function dmNotifRec(player, message){
-    let handle = RegisterPedheadshotTransparent(PlayerPedId())
+    let handle = RegisterPedheadshot(PlayerPedId())
     while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
     }
     let txd = GetPedheadshotTxdString(handle)
     BeginTextCommandThefeedPost('DM_RECEIVED');
     AddTextComponentSubstringPlayerName(message)
-    //ThefeedNextPostBackgroundColor(110)
+    ThefeedNextPostBackgroundColor(110)
     let title = player
     let subtitle = 'DM Received'
     let iconType = 0
-    let flash = true
+    let flash = false
     EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
 }
 
 async function dmNotifSent(player, message){
-    let handle = RegisterPedheadshotTransparent(PlayerPedId())
+    let handle = RegisterPedheadshot(PlayerPedId())
     while(!IsPedheadshotReady(handle) || !IsPedheadshotValid(handle)){
         await WAIT(0)
     }
     let txd = GetPedheadshotTxdString(handle)
     BeginTextCommandThefeedPost('DM_SENT');
     AddTextComponentSubstringPlayerName(message)
-    //ThefeedNextPostBackgroundColor(110)
+    ThefeedNextPostBackgroundColor(110)
     let title = player
     let subtitle = 'DM Sent'
     let iconType = 0
-    let flash = true
+    let flash = false
     EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
 }
