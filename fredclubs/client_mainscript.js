@@ -27,8 +27,6 @@ var NightClubs = [];
 AddTextEntry("NightclubsNearbyClubHelpText", `Press ${EnterControlButton} to enter this nightclub`);
 AddTextEntry("NightclubsNearbyClubExitHelpText", `Press ${EnterControlButton} to exit this nightclub`);
 
-console.log("HELLO FROM REPO 2")
-
 function SetTickRate(tickRate) {
     TickRate = tickRate;
     return TickRate;
@@ -529,7 +527,6 @@ RequestNightClubsFromServer();
                 }
 
                 DisableControlAction(0, 24, true);
-                DisableControlAction(0, 25, true);
                 DisableControlAction(0, 257, true);
 
                 var PauseMenuActive = IsPauseMenuActive();
