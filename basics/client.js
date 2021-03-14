@@ -38,7 +38,7 @@ async function dmNotifRec(player, message){
     //ThefeedNextPostBackgroundColor(110)
     let title = player
     let subtitle = 'DM Received'
-    let iconType = 1
+    let iconType = 0
     let flash = true
     EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
@@ -55,7 +55,7 @@ async function dmNotifSent(player, message){
     //ThefeedNextPostBackgroundColor(110)
     let title = player
     let subtitle = 'DM Sent'
-    let iconType = 1
+    let iconType = 0
     let flash = true
     EndTextCommandThefeedPostMessagetext(txd, txd, flash, iconType, title, subtitle)
     UnregisterPedheadshot(handle)
