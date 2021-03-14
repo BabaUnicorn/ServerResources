@@ -3,12 +3,12 @@ let wait = (ms) => new Promise(res => setTimeout(res, ms));
 RegisterNetEvent('playerJoining')
 on('playerJoining', (source) => {
     let name = GetPlayerName(global.source)
-    emitNet('louBasics:joinMsg', name)
+    emitNet('louBasics:joinMsg', -1, name)
 })
 
 on('playerDropped', (reason) => {
     let name = GetPlayerName(global.source)
-    emitNet('louBasics:leaveMsg', name)
+    emitNet('louBasics:leaveMsg', -1, name)
 })
 
 RegisterCommand('tp', (source, args) => {
