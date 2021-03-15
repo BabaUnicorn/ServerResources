@@ -439,8 +439,7 @@ function CMD (source, args) {
 
     switch (args[0].toLowerCase()) {
         case 'exit':
-            if (!GetNightclubPlayerIsIn(source)) return emitNet('chat:addMessage');
-            emitNet("Nightclubs:ExitCurrentNightClub", source, {
+            if (!GetNightclubPlayerIsIn(source)) return emitNet("Nightclubs:ExitCurrentNightClub", source, {
                 args: [
                     "^1Error", "You aren't inside any nightclubs"
                 ]
