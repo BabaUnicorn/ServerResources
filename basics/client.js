@@ -44,12 +44,13 @@ function nukedPed(nukedPed, source){
     EndTextCommandThefeedPostTicker(true, false);
 }
 
-onNet('louBasics:nukeSent', (nukedPed) => {
-    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2] + 1, 29, 0, true, false, 1)
+onNet('louBasics:nukeSent', (nukedPed, source) => {
+    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2] + 2, 29, 0, true, false, 2)
+    nukedPed(nukedPed, source)
 })
 
-onNet('louBasics:nukeNoArgs', (nukedPed, source) => {
-    nukedPed(nukedPed, source)
+onNet('louBasics:nukeNoArgs', () => {
+    nukeNoArgs()
 })
 
 function joinMsg(name){
