@@ -122,19 +122,6 @@ RegisterCommand('vworld', (source, args) => {
         emitNet('louBasics:vworldNoArgs', source);
     } else {
         SetPlayerRoutingBucket(idResult, targetWorld)
-        console.log(`set ${idResult} to ${GetPlayerRoutingBucket(idResult)}`)
         emitNet('louBasics:vworldNotif', idResult, targetWorld);
     }
-})
-    
-// DEBUG COMMAND AAAAAAAAAAAAAA TO DELETE
-
-RegisterCommand('rbdebug1', (source) => {
-    SetPlayerRoutingBucket(source, 69)
-    console.log('routing bucket debug 1 !! switched to rb 69')
-})
-
-RegisterCommand('rbdebug2', (source) => {
-    SetPlayerRoutingBucket(source, 0)
-    console.log('routing bucket debug 2 !! switched back to rb 0')
 })
