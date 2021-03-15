@@ -1,8 +1,3 @@
-AddTextEntry('MODEL_NOT_FOUND', '~r~Couldn\'t find model in game files.~n~~h~Usage:~s~ /v name');
-AddTextEntry('NO_VEHICLE', '~r~You\'re not in a vehicle! Enter a vehicle and try again.');
-AddTextEntry('VEHICLE_DELETED', '~h~Your vehicle has been deleted.');
-AddTextEntry('VEHICLE_FIXED', '~h~Your vehicle has been fixed.');
-AddTextEntry('VEHICLE_LOCKED', '~h~Your vehicle has been locked.');
 let wait = (ms) => new Promise(res => setTimeout(res, ms));
 
 RegisterNetEvent('playerJoining')
