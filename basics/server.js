@@ -1,8 +1,4 @@
 let wait = (ms) => new Promise(res => setTimeout(res, ms));
-let HasPlayerBeenMessaged = false
-
-function replyCmd(HasPlayerBeenMessaged){
-    HasPlayerBeenMessaged = true
 
 RegisterNetEvent('playerJoining')
 on('playerJoining', (source) => {
