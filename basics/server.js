@@ -23,13 +23,22 @@ RegisterCommand('tp', (source, args) => {
     }
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let srcBucket = GetPlayerRoutingBucket(source)
+    console.log(srcBucket)
+    let resBucket = GetPlayerRoutingBucket(idResult)
+    console.log(resBucket)
     if(!idResult || idResult == null){
         emitNet('louBasics:tpNoArgs', source);
+    } else if(srcBucket != resBucket){
+        let destCoords = GetEntityCoords(GetPlayerPed(idResult));
+        SetPlayerRoutingBucket(source, resBucket)
+        SetEntityCoords(source, destCoords[0], destCoords[1], destCoords[2], false, false, false, false);
+        emitNet('louBasics:tpDiffRBucket', source, GetPlayerName(idResult));
+        emitNet('louBasics:tpNotif', idResult, GetPlayerName(source));
     } else {
         let destCoords = GetEntityCoords(GetPlayerPed(idResult));
         SetEntityCoords(source, destCoords[0], destCoords[1], destCoords[2], false, false, false, false);
         emitNet('louBasics:tpNotif', idResult, GetPlayerName(source));
-    }
 })
 
 RegisterCommand('get', (source, args) => {
