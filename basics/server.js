@@ -118,7 +118,7 @@ RegisterCommand('vworld', (source, args) => {
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
     let targetWorld = parseInt(args[1])
-    if(!idResult || idResult == null || !targetWorld || targetWorld == null){
+    if(!idResult || idResult == null || !targetWorld){
         emitNet('louBasics:vworldNoArgs', source);
     } else {
         SetPlayerRoutingBucket(idResult, targetWorld)
