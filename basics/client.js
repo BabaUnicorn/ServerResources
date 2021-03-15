@@ -1,13 +1,13 @@
 AddTextEntry('MODEL_NOT_FOUND', '~r~Couldn\'t find model in game files.~n~~h~Usage:~s~ /v name');
 AddTextEntry('NO_VEHICLE', '~r~You\'re not in a vehicle! Enter a vehicle and try again.');
-AddTextEntry('VEHICLE_DELETED', '~h~Your vehicle has been deleted.');
-AddTextEntry('VEHICLE_FIXED', '~h~Your vehicle has been fixed.');
+AddTextEntry('VEHICLE_DELETED', 'Your vehicle has been deleted.');
+AddTextEntry('VEHICLE_FIXED', 'Your vehicle has been fixed.');
 AddTextEntry('TP_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /tp id');
 AddTextEntry('KICK_NO_ARGS', '~r~Server ID is either invalid, not provided or you did not specify a reason!~n~~h~Usage:~s~ /kick id reason');
-AddTextEntry('TP_NOTIF', '~h~~a~ has TP\'d to you!');
-AddTextEntry('GET_NOTIF', '~h~~a~ has TP\'d you to them!');
+AddTextEntry('TP_NOTIF', '~a~ has TP\'d to you!');
+AddTextEntry('GET_NOTIF', '~a~ has TP\'d you to them!');
 AddTextEntry('GET_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /get id');
-AddTextEntry('TP_DIFF_RBUCKET', '~h~~a~ is in a different virtual world. Switching...');
+AddTextEntry('TP_DIFF_RBUCKET', '~a~ is in a different virtual world. Switching...');
 AddTextEntry('NO_RGB', '~r~RGB values are invalid.~n~~h~Usage:~s~ /vcolor 0-255 0-255 0-255');
 AddTextEntry('DM_NO_ARGS', '~r~Server ID is either invalid, not provided or message is missing!~n~~h~Usage:~s~ /dm id message');
 AddTextEntry("DM_RECEIVED", "~a~");
