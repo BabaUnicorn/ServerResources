@@ -105,3 +105,16 @@ RegisterCommand('dm', (source, args) => {
         emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent);
     }
 })
+
+    
+// DEBUG COMMAND AAAAAAAAAAAAAA TO DELETE
+
+RegisterCommand('rbdebug1, (source) => {
+    SetPlayerRoutingBucket(source, 69)
+    console.log('routing bucket debug 1 !! switched to rb 69')
+})
+
+RegisterCommand('rbdebug2', (source) => {
+    SetPlayerRoutingBucket(source, 0)
+    console.log('routing bucket debug 2 !! switched back to rb 0')
+})
