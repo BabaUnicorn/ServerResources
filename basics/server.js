@@ -72,7 +72,6 @@ RegisterCommand('kick', (source, args) => {
     if(!idResult || idResult == null || !reasonArgs || reasonArgs == null || reasonArgs == ''){
         emitNet('louBasics:kickNoArgs', source);
     } else {
-        emitNet('louBasics:playerKicked', -1, GetPlayerName(idResult));
         DropPlayer(idResult, kickReason);
     }
 }, true)
@@ -95,26 +94,5 @@ RegisterCommand('dm', (source, args) => {
     } else {
         emitNet('louBasics:dmNotifRec', idResult, GetPlayerName(source), msgContent);
         emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent);
-    }
-})
-
-
-RegisterCommand('nuke', (source, args) => {
-    const GetPlayers = () => {
-        let t = []
-        
-        for (let i = 0; i < GetNumPlayerIndices(); i++) {
-            t.push(GetPlayerFromIndex(i))
-        }
-    
-        return t
-    }
-    
-    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
-    let nukedPed = GetEntityCoords(GetPlayerPed(idResult));
-    if(!idResult || idResult == null){
-        emitNet('louBasics:nukeNoArgs', source);
-    } else {
-        emitNet('louBasics:nukeSent', idResult, nukedPed, GetPlayerName(source))
     }
 })
