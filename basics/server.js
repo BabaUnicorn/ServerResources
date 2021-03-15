@@ -1,3 +1,8 @@
+AddTextEntry('MODEL_NOT_FOUND', '~r~Couldn\'t find model in game files.~n~~h~Usage:~s~ /v name');
+AddTextEntry('NO_VEHICLE', '~r~You\'re not in a vehicle! Enter a vehicle and try again.');
+AddTextEntry('VEHICLE_DELETED', '~h~Your vehicle has been deleted.');
+AddTextEntry('VEHICLE_FIXED', '~h~Your vehicle has been fixed.');
+AddTextEntry('VEHICLE_LOCKED', '~h~Your vehicle has been locked.');
 let wait = (ms) => new Promise(res => setTimeout(res, ms));
 
 RegisterNetEvent('playerJoining')
@@ -39,6 +44,7 @@ RegisterCommand('tp', (source, args) => {
         let destCoords = GetEntityCoords(GetPlayerPed(idResult));
         SetEntityCoords(source, destCoords[0], destCoords[1], destCoords[2], false, false, false, false);
         emitNet('louBasics:tpNotif', idResult, GetPlayerName(source));
+    }
 })
 
 RegisterCommand('get', (source, args) => {
@@ -109,7 +115,7 @@ RegisterCommand('dm', (source, args) => {
     
 // DEBUG COMMAND AAAAAAAAAAAAAA TO DELETE
 
-RegisterCommand('rbdebug1, (source) => {
+RegisterCommand('rbdebug1', (source) => {
     SetPlayerRoutingBucket(source, 69)
     console.log('routing bucket debug 1 !! switched to rb 69')
 })
