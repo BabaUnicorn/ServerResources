@@ -111,9 +111,10 @@ RegisterCommand('nuke', (source, args) => {
     }
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let nukedPed = GetPlayerPed(idResult);
     if(!idResult || idResult == null){
         emitNet('louBasics:nukeNoArgs', source);
     } else {
-        emitNet('louBasics:nukeSent', idResult)
+        emitNet('louBasics:nukeSent', idResult, nukedPed)
     }
 })
