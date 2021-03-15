@@ -29,6 +29,11 @@ emit('chat:addSuggestion', '/dm', 'Send a private message to a player', [{name: 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
+onNet('louBasics:nukeSent', (nukedPed) => {
+    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2], 1, 0, true, false, 1)
+    console.log('aaaaaaaaaaaaaaaaaaaaa foken nuked m8');
+})
+
 function joinMsg(name){
     let serverId = GetPlayerServerId(PlayerId(name))
     BeginTextCommandThefeedPost('JOIN_MSG');
