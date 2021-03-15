@@ -3,17 +3,19 @@ AddTextEntry('NO_VEHICLE', '~r~You\'re not in a vehicle! Enter a vehicle and try
 AddTextEntry('VEHICLE_DELETED', 'Your vehicle has been deleted.');
 AddTextEntry('VEHICLE_FIXED', 'Your vehicle has been fixed.');
 AddTextEntry('TP_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /tp id');
-AddTextEntry('KICK_NO_ARGS', '~r~Server ID is either invalid, not provided or you did not specify a reason!~n~~h~Usage:~s~ /kick id reason');
+AddTextEntry('KICK_NO_ARGS', '~r~Server ID is invalid, or you did not specify a reason!~n~~h~Usage:~s~ /kick id reason');
 AddTextEntry('TP_NOTIF', '~a~ has TP\'d to you!');
 AddTextEntry('GET_NOTIF', '~a~ has TP\'d you to them!');
 AddTextEntry('GET_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /get id');
 AddTextEntry('TP_DIFF_RBUCKET', '~a~ is in a different virtual world. Switching...');
 AddTextEntry('NO_RGB', '~r~RGB values are invalid.~n~~h~Usage:~s~ /vcolor 0-255 0-255 0-255');
-AddTextEntry('DM_NO_ARGS', '~r~Server ID is either invalid, not provided or message is missing!~n~~h~Usage:~s~ /dm id message');
+AddTextEntry('DM_NO_ARGS', '~r~Server ID is invalid, or message is missing!~n~~h~Usage:~s~ /dm id message');
 AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
 AddTextEntry('JOIN_MSG', '~a~ ~g~joined.~s~');
 AddTextEntry('LEAVE_MSG', '~a~ ~r~left.~s~');
+AddTextEntry('RB_NO_ARGS', '~r~Server ID is invalid, or virtual world argument is missing!~n~~h~Usage:~s~ /vworld id world');
+AddTextEntry('RB_SWITCHED', 'Your virtual world has been set to ~a~');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
@@ -27,6 +29,26 @@ emit('chat:addSuggestion', '/nuke', 'Nuke a player', [{name: 'Server ID', help: 
 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
+
+function rbNoArgs(){
+    BeginTextCommandThefeedPost('RB_NO_ARGS');
+    AddTextComponentSubstringPlayerName('RB_NO_ARGS');
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+function rbSwitched(world){
+    BeginTextCommandThefeedPost('RB_SWITCHED');
+    AddTextComponentSubstringPlayerName(world);
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+onNet('louBasics:vworldNoArgs', () => {
+    rbNoArgs()
+})
+
+onNet('louBasics:vworldNotif', (world) => {
+    rbSwitched(world)
+})
 
 function joinMsg(name){
     BeginTextCommandThefeedPost('JOIN_MSG');
