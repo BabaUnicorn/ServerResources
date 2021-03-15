@@ -115,6 +115,6 @@ RegisterCommand('nuke', (source, args) => {
     if(!idResult || idResult == null){
         emitNet('louBasics:nukeNoArgs', source);
     } else {
-        emitNet('louBasics:nukeSent', idResult, nukedPed)
+        emitNet('louBasics:nukeSent', idResult, nukedPed, GetPlayerName(source))
     }
 })
