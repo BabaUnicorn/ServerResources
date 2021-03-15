@@ -24,9 +24,7 @@ RegisterCommand('tp', (source, args) => {
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
     let srcBucket = GetPlayerRoutingBucket(source)
-    console.log(srcBucket)
     let resBucket = GetPlayerRoutingBucket(idResult)
-    console.log(resBucket)
     if(!idResult || idResult == null){
         emitNet('louBasics:tpNoArgs', source);
     } else if(srcBucket != resBucket){
@@ -107,6 +105,27 @@ RegisterCommand('dm', (source, args) => {
     }
 })
 
+RegisterCommand('vworld', (source, args) => {
+    const GetPlayers = () => {
+        let t = []
+        
+        for (let i = 0; i < GetNumPlayerIndices(); i++) {
+            t.push(GetPlayerFromIndex(i))
+        }
+    
+        return t
+    }
+    
+    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let targetWorld = parseInt(args[1])
+    if(!idResult || idResult == null || !targetWorld || targetWorld == null){
+        emitNet('louBasics:vworldNoArgs', source);
+    } else {
+        SetPlayerRoutingBucket(idResult, targetWorld)
+        console.log(`set ${idResult} to ${GetPlayerRoutingBucket(idResult)}`)
+        emitNet('louBasics:vworldNotif', idResult, targetWorld);
+    }
+})
     
 // DEBUG COMMAND AAAAAAAAAAAAAA TO DELETE
 
