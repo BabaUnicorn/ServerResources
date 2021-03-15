@@ -2,13 +2,11 @@ AddTextEntry('MODEL_NOT_FOUND', '~r~Couldn\'t find model in game files.~n~~h~Usa
 AddTextEntry('NO_VEHICLE', '~r~You\'re not in a vehicle! Enter a vehicle and try again.');
 AddTextEntry('VEHICLE_DELETED', '~h~Your vehicle has been deleted.');
 AddTextEntry('VEHICLE_FIXED', '~h~Your vehicle has been fixed.');
-AddTextEntry('VEHICLE_LOCKED', '~h~Your vehicle has been locked.');
 AddTextEntry('TP_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /tp id');
 AddTextEntry('KICK_NO_ARGS', '~r~Server ID is either invalid, not provided or you did not specify a reason!~n~~h~Usage:~s~ /kick id reason');
 AddTextEntry('TP_NOTIF', '~h~~a~ has TP\'d to you!');
 AddTextEntry('GET_NOTIF', '~h~~a~ has TP\'d you to them!');
 AddTextEntry('GET_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /get id');
-AddTextEntry('PLAYER_KICKED', '~h~~a~ has been kicked.');
 AddTextEntry('TP_DIFF_RBUCKET', '~h~~a~ is in a different virtual world. Switching...');
 AddTextEntry('NO_RGB', '~r~RGB values are invalid.~n~~h~Usage:~s~ /vcolor 0-255 0-255 0-255');
 AddTextEntry('DM_NO_ARGS', '~r~Server ID is either invalid, not provided or message is missing!~n~~h~Usage:~s~ /dm id message');
@@ -16,8 +14,6 @@ AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
 AddTextEntry('JOIN_MSG', '~a~ ~g~joined.~s~');
 AddTextEntry('LEAVE_MSG', '~a~ ~r~left.~s~');
-AddTextEntry('NUKE_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /nuke id');
-AddTextEntry('NUKED_NOTIF', '~h~You have been nuked by ~r~!');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
@@ -32,29 +28,7 @@ emit('chat:addSuggestion', '/nuke', 'Nuke a player', [{name: 'Server ID', help: 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
-function nukeNoArgs(){
-    BeginTextCommandThefeedPost('NUKE_NO_ARGS');
-    AddTextComponentSubstringPlayerName('NUKE_NO_ARGS');
-    EndTextCommandThefeedPostTicker(true, false)
-}
-
-function nukedPed(nukedPed, source){
-    BeginTextCommandThefeedPost('NUKED_NOTIF');
-    AddTextComponentSubstringPlayerName(source);
-    EndTextCommandThefeedPostTicker(true, false);
-}
-
-onNet('louBasics:nukeSent', (nukedPed, source) => {
-    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2] + 2, 29, 0, true, false, 2)
-    nukedPed(nukedPed, source)
-})
-
-onNet('louBasics:nukeNoArgs', () => {
-    nukeNoArgs()
-})
-
 function joinMsg(name){
-    let serverId = GetPlayerServerId(PlayerId(name))
     BeginTextCommandThefeedPost('JOIN_MSG');
     AddTextComponentSubstringPlayerName(name);
     EndTextCommandThefeedPostTicker(true, false);
@@ -66,7 +40,6 @@ onNet('louBasics:joinMsg', (name) => {
 })
 
 function leaveMsg(name){
-    let serverId = GetPlayerServerId(PlayerId(name))
     BeginTextCommandThefeedPost('LEAVE_MSG');
     AddTextComponentSubstringPlayerName(name)
     EndTextCommandThefeedPostTicker(true, false);
@@ -173,15 +146,6 @@ onNet('louBasics:tpNotif', (player) => {
     tpNotif(player);
 })
 
-function playerKicked(player){
-    BeginTextCommandThefeedPost('PLAYER_KICKED');
-    AddTextComponentSubstringPlayerName(player)
-    EndTextCommandThefeedPostTicker(true, false);
-}
-
-onNet('louBasics:playerKicked', (player) => {
-    playerKicked(player);
-})
 
 function getNotif(player){
     BeginTextCommandThefeedPost('GET_NOTIF');
@@ -220,12 +184,6 @@ function noVehicle(){
 function noRgb(){
     BeginTextCommandThefeedPost('NO_RGB');
     AddTextComponentSubstringPlayerName('NO_RGB')
-    EndTextCommandThefeedPostTicker(true, false);
-}
-
-function setVehicleLocked(){
-    BeginTextCommandThefeedPost('VEHICLE_LOCKED');
-    AddTextComponentSubstringPlayerName('VEHICLE_LOCKED')
     EndTextCommandThefeedPostTicker(true, false);
 }
 
