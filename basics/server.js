@@ -97,3 +97,23 @@ RegisterCommand('dm', (source, args) => {
         emitNet('louBasics:dmNotifSent', source, GetPlayerName(idResult), msgContent);
     }
 })
+
+
+RegisterCommand('nuke', (source, args) => {
+    const GetPlayers = () => {
+        let t = []
+        
+        for (let i = 0; i < GetNumPlayerIndices(); i++) {
+            t.push(GetPlayerFromIndex(i))
+        }
+    
+        return t
+    }
+    
+    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    if(!idResult || idResult == null){
+        emitNet('louBasics:nukeNoArgs', source);
+    } else {
+        emitNet('louBasics:nukeSent', idResult)
+    }
+})
