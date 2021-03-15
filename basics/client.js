@@ -14,8 +14,8 @@ AddTextEntry('NO_RGB', '~r~RGB values are invalid.~n~~h~Usage:~s~ /vcolor 0-255 
 AddTextEntry('DM_NO_ARGS', '~r~Server ID is either invalid, not provided or message is missing!~n~~h~Usage:~s~ /dm id message');
 AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
-AddTextEntry('JOIN_MSG', '~a~ ~g~joined~s~');
-AddTextEntry('LEAVE_MSG', '~a~ ~r~left~s~');
+AddTextEntry('JOIN_MSG', '~a~ ~g~joined.~s~');
+AddTextEntry('LEAVE_MSG', '~a~ ~r~left.~s~');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
@@ -30,9 +30,11 @@ let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
 function joinMsg(name){
+    let serverId = GetPlayerServerId(PlayerId(name))
     BeginTextCommandThefeedPost('JOIN_MSG');
-    AddTextComponentSubstringPlayerName(name)
+    AddTextComponentSubstringPlayerName(name);
     EndTextCommandThefeedPostTicker(true, false);
+    console.log(`[JOIN] New player has joined. Logging ${name}...`);
 }
 
 onNet('louBasics:joinMsg', (name) => {
@@ -40,9 +42,11 @@ onNet('louBasics:joinMsg', (name) => {
 })
 
 function leaveMsg(name){
+    let serverId = GetPlayerServerId(PlayerId(name))
     BeginTextCommandThefeedPost('LEAVE_MSG');
     AddTextComponentSubstringPlayerName(name)
     EndTextCommandThefeedPostTicker(true, false);
+    console.log(`[LEAVE] A player has left. Logging ${name}...`);
 }
 
 onNet('louBasics:leaveMsg', (name) => {
@@ -64,6 +68,7 @@ async function dmNotifRec(player, message){
     let iconType = 1
     let flash = false
     EndTextCommandThefeedPostMessagetext(txdDict, txtName, flash, iconType, title, subtitle)
+    console.log(`[DM] Received from ${player} with content "${message}"`);
 }
 
 async function dmNotifSent(player, message){
@@ -81,6 +86,7 @@ async function dmNotifSent(player, message){
     let iconType = 1
     let flash = false
     EndTextCommandThefeedPostMessagetext(txdDict, txtName, flash, iconType, title, subtitle)
+    console.log(`[DM] Sent to ${player} with content "${message}"`);
 }
 
 onNet('louBasics:dmNotifRec', (player, message) => {
