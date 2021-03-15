@@ -16,6 +16,8 @@ AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
 AddTextEntry('JOIN_MSG', '~a~ ~g~joined.~s~');
 AddTextEntry('LEAVE_MSG', '~a~ ~r~left.~s~');
+AddTextEntry('NUKE_NO_ARGS', '~r~Server ID is invalid or not provided!~n~~h~Usage:~s~ /nuke id');
+AddTextEntry('NUKED_NOTIF', '~h~You have been nuked by ~r~!');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
@@ -25,13 +27,29 @@ emit('chat:addSuggestion', '/vcolor', 'Set vehicle primary and secondary color, 
 emit('chat:addSuggestion', '/get', 'Teleport another player to you', [{name: 'Server ID', help: 'Player\'s server ID'}])
 emit('chat:addSuggestion', '/kick', 'Kick a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Reason', help: 'Note: the player will see the reason!'}])
 emit('chat:addSuggestion', '/dm', 'Send a private message to a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Message', help: 'Express yourself!'}])
+emit('chat:addSuggestion', '/nuke', 'Nuke a player', [{name: 'Server ID', help: 'Player\'s server ID'}]);
 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 
+function nukeNoArgs(){
+    BeginTextCommandThefeedPost('NUKE_NO_ARGS');
+    AddTextComponentSubstringPlayerName('NUKE_NO_ARGS');
+    EndTextCommandThefeedPostTicker(true, false)
+}
+
+function nukedPed(nukedPed, source){
+    BeginTextCommandThefeedPost('NUKED_NOTIF');
+    AddTextComponentSubstringPlayerName(source);
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
 onNet('louBasics:nukeSent', (nukedPed) => {
-    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2], 1, 0, true, false, 1)
-    console.log('aaaaaaaaaaaaaaaaaaaaa foken nuked m8');
+    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2], 10, 0, true, false, 1)
+})
+
+onNet('louBasics:nukeNoArgs', (nukedPed, source) => {
+    nukedPed(nukedPed, source)
 })
 
 function joinMsg(name){
