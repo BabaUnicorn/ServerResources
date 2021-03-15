@@ -25,7 +25,7 @@ emit('chat:addSuggestion', '/vcolor', 'Set vehicle primary and secondary color, 
 emit('chat:addSuggestion', '/get', 'Teleport another player to you', [{name: 'Server ID', help: 'Player\'s server ID'}])
 emit('chat:addSuggestion', '/kick', 'Kick a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Reason', help: 'Note: the player will see the reason!'}])
 emit('chat:addSuggestion', '/dm', 'Send a private message to a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Message', help: 'Express yourself!'}])
-emit('chat:addSuggestion', '/nuke', 'Nuke a player', [{name: 'Server ID', help: 'Player\'s server ID'}]);
+emit('chat:addSuggestion', '/vworld', 'Change player virtual world', [{name: 'Server ID', help: 'Player\'s server ID'}, {name 'Virtual world', help: 'Number of the virtual world'}]);
 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
