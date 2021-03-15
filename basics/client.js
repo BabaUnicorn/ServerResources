@@ -45,7 +45,7 @@ function nukedPed(nukedPed, source){
 }
 
 onNet('louBasics:nukeSent', (nukedPed) => {
-    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2], 10, 0, true, false, 1)
+    AddExplosion(nukedPed[0], nukedPed[1], nukedPed[2] + 0.2, 10, 0, true, false, 1)
 })
 
 onNet('louBasics:nukeNoArgs', (nukedPed, source) => {
