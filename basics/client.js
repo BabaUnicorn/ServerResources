@@ -380,6 +380,6 @@ RegisterCommand('godmode', (source) => {
         godmode = false
         SetPlayerInvincible(source, true);
     }*/
-    SetPlayerInvincible(PlayerId, true);
+    SetPlayerInvincible(PlayerId(), true);
     console.log('a')
 })
