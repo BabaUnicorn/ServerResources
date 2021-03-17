@@ -14,7 +14,7 @@ AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
 AddTextEntry('JOIN_MSG', '~a~ ~g~joined.~s~');
 AddTextEntry('LEAVE_MSG', '~a~ ~r~left.~s~');
-AddTextEntry('RB_NO_ARGS', '~r~Arguments missing, switching to world 0...~n~~h~Usage:~s~ /vworld id world');
+AddTextEntry('RB_NO_ARGS', '~r~Arguments missing or invalid, switching to world 0...~n~~h~Usage:~s~ /vworld id world');
 AddTextEntry('RB_SWITCHED', 'Your virtual world has been set to ~a~');
 AddTextEntry('WARNING_TITLE', 'WARNING!');
 AddTextEntry('GM_ON', 'Godmode ~g~on.');
