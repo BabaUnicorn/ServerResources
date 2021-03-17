@@ -867,6 +867,16 @@ RegisterCommand('club', CMD);
 RegisterCommand('clubs', CMD);
 RegisterCommand('nightclub', CMD);
 RegisterCommand('nightclubs', CMD);
+var toggle = false;
+RegisterCommand('lights', (source, args) => {
+    if (toggle) {
+        emitNet('Nightclubs:DistantLights', -1, false);
+        toggle = false;
+    } else {
+        emitNet('Nightclubs:DistantLights', -1, true);
+        toggle = true;
+    }
+});
 /*RegisterCommand('clubseval', (source, args) => {
     const evaled = eval(args.join(" "));
     console.log(evaled)
