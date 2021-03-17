@@ -14,7 +14,7 @@ AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
 AddTextEntry('JOIN_MSG', '~a~ ~g~joined.~s~');
 AddTextEntry('LEAVE_MSG', '~a~ ~r~left.~s~');
-AddTextEntry('RB_NO_ARGS', '~r~Arguments missing or invalid, switching to world 0...~n~~h~Usage:~s~ /vworld id world');
+AddTextEntry('RB_NO_ARGS', '~r~Arguments missing, switching to world 0...~n~~h~Usage:~s~ /vworld id world');
 AddTextEntry('RB_SWITCHED', 'Your virtual world has been set to ~a~');
 AddTextEntry('WARNING_TITLE', 'WARNING!');
 AddTextEntry('GM_ON', 'Godmode ~g~on.');
@@ -23,6 +23,7 @@ AddTextEntry('VGM_ON', 'Vehicle godmode ~g~on.');
 AddTextEntry('VGM_OFF', 'Vehicle godmode ~r~off.');
 AddTextEntry('WARNING_SUBTITLE', '~r~Please do not ignore the following message.');
 AddTextEntry('WARNING_NO_ARGS', '~r~Server ID is invalid, or message is missing!~n~~h~Usage:~s~ /warn id message')
+AddTextEntry('WARNING_SUCCESS', 'You have warned ~a~.');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
@@ -37,6 +38,7 @@ emit('chat:addSuggestion', '/warn', 'Warn a player', [{name: 'Server ID', help: 
 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
+let godmode = !GetPlayerInvincible(PlayerId());
 
 async function warningsMsg(msg){
     let loop = true
@@ -70,14 +72,6 @@ function invincibilityOff(){
     EndTextCommandThefeedPostTicker(true, false);
 }
 
-onNet('louBasics:invincibilityOn', () => {
-    invincibilityOn();
-})
-
-onNet('louBasics:invincibilityOff', () => {
-    invincibilityOff();
-})
-
 function vehInvincibilityOn(){
     if(!IsPedInAnyVehicle(PlayerPedId())){
         noVehicle();
@@ -100,14 +94,6 @@ function vehInvincibilityOff(){
     }   
 }
 
-onNet('louBasics:vehInvincibilityOn', () => {
-    vehInvincibilityOn();
-})
-
-onNet('louBasics:vehInvincibilityOff', () => {
-    vehInvincibilityOff();
-})
-
 function warnNoArgs(){
     BeginTextCommandThefeedPost('WARNING_NO_ARGS');
     AddTextComponentSubstringPlayerName('WARNING_NO_ARGS');
@@ -129,6 +115,16 @@ function rbSwitched(world){
     AddTextComponentSubstringPlayerName(world);
     EndTextCommandThefeedPostTicker(true, false);
 }
+
+function warningSuccess(name){
+    BeginTextCommandThefeedPost('WARNING_SUCCESS');
+    AddTextComponentSubstringPlayerName(name);
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+onNet('louBasics:warningNotif', (name) => {
+    warningSuccess(name);
+})
 
 onNet('louBasics:vworldNoArgs', () => {
     rbNoArgs()
@@ -373,5 +369,15 @@ RegisterCommand('vcolor', (source, args, r, g, b) => {
     } else {
         SetVehicleCustomPrimaryColour(veh, r, g, b)
         SetVehicleCustomSecondaryColour(veh, r, g, b)
+    }
+})
+
+RegisterCommand('godmode', (source) => {
+    if(!godmode){
+        godmode = true
+        SetPlayerInvincible(source, true);
+    } else if (godmode){
+        godmode = false
+        SetPlayerInvincible(source, true);
     }
 })
