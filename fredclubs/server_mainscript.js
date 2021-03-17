@@ -821,15 +821,14 @@ function CMD (source, args) {
             }
 
             var InviterInfo = GetPlayerFromCache(source);
+            var Invite = CreateInvite(source, Player.id, InvitersClub);
 
-            emitNet('Nightclubs:InviteNotification', Player.id, JSON.stringify(InviterInfo), JSON.stringify(InvitersClub), InviteIds);
+            emitNet('Nightclubs:InviteNotification', Player.id, JSON.stringify(InviterInfo), JSON.stringify(InvitersClub), Invite);
             emitNet('chat:addMessage', source, {args: ['^2Success', `Invited ${Player.name} to ${InvitersClub.name}`]});
-            
-            CreateInvite(source, Player.id, InvitersClub);
         break;
         case 'accept':
             if (!args[1]) return emitNet('chat:addMessage', source, {args: ['^1Syntax', `/club accept <Invite ID>. Use /club invites to view all your invites.`]});
-            var Invite = GetInviteById(parseInt(args[0]));
+            var Invite = GetInviteById(parseInt(args[1]));
             if (!Invite) {
                 return emitNet('chat:addMessage', source, {args: ['^1Error', `Invalid invite ID. Use /club invites to view all your invites.`]});
             } else if (GetNightclubPlayerIsIn(source)) return emitNet('chat:addMessage', source, {args: ['^1Error', `Leave your current nightclub first.`]});
