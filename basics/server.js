@@ -139,39 +139,10 @@ RegisterCommand('warn', async (source, args) => {
         emitNet('louBasics:warningNoArgs', source)
     } else {
         emitNet('louBasics:warningMsg', idResult, warningMsg)
+        emitNet('louBasics:warningNotif', source, GetPlayerName(idResult));
     }
 }, true)
 
-RegisterCommand('godmode', (source) => {
-    if(!godmode){
-        godmode = true
-        emitNet('louBasics:invincibilityOn', source);
-    } else if(godmode){
-        godmode = false
-        emitNet('louBasics:invincibilityOff', source);
-    }
-})
-
-RegisterCommand('vgodmode', (source) => {
-    if(!vgodmode){
-        vgodmode = true
-        emitNet('louBasics:vehInvincibilityOn', source);
-    } else if(vgodmode){
-        vgodmode = false
-        emitNet('louBasics:vehInvincibilityOff', source);
-    }
-})
-
-RegisterCommand('basics', (source, args) => {
-    let helpCmd = args[0]
-
-    if(!args || args == null){
-        emitNet('louBasics:helpCmds', source);
-        console.log('debug command... no args...');
-    }
-
-    if(helpCmd){
-        emitNet('louBasics:helpScaleform', source);
-        console.log('debug command... help...')
-    }
-})
+RegisterCommand('basics', (source) => {
+    console.log('help and cmds section is WIP :3')
+});
