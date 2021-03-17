@@ -470,7 +470,7 @@ var RoutingBucketEnabled = true;
 var NightclubsWorldId = 6;
 var InVirtualWorld = [];
 var Sessions = new Map();
-var PlayersCache = new Map();
+var PlayersCache = [];
 var PlayerInvites = [];
 var InviteIds = 0;
 var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : TickRate));
@@ -498,10 +498,55 @@ function GetPlayers() {
     let t = []
 
     for (let i = 0; i < GetNumPlayerIndices(); i++) {
-        t.push(GetPlayerFromIndex(i));
+        t.push(parseInt(GetPlayerFromIndex(i)));
     }
 
     return t;
+}
+
+function AddPlayerToCache(id) {
+    if (!id) {
+        return null;
+    } else if (IsPlayerCached(id)) {
+        DebugLog(`Error: Player ${id} is already cached.`, true);
+        return false;
+    }
+    
+    var name = GetPlayerName(id);
+    var Info = {
+        id: id,
+        name: name,
+        fullName: `[${id}] ${name}`,
+        identifiers: GetNumPlayerIdentifiers(id)
+    };
+
+    PlayersCache.push(Info);
+    DebugLog(`AddPlayerToCache: Added player ${id} to cache`);
+
+    return PlayersCache;
+}
+
+function IsPlayerCached(id) {
+    if (!id) return null;
+    return ((PlayersCache.find(p => p.id === id)) ? true : false);
+}
+
+function RemovePlayerFromCache(id) {
+    if (!id) return null;
+    PlayersCache = PlayersCache.filter(p => p.id !== id);
+    return PlayersCache;
+}
+
+function GetPlayerFromCache(id) {
+    if (!id) return null;
+    var player = PlayersCache.find(player => player.id === id);
+    return (player ? player : null);
+}
+
+function SearchPlayerFromCacheWithName(name) {
+    if (!name) return null;
+    var player = PlayersCache.find(player => player.name.toLowerCase().replace(/ /g, '').includes(name.toLowerCase().replace(/ /g, '')));
+    return (player ? player : null);
 }
 
 GetPlayers().forEach(async player => {
@@ -509,46 +554,40 @@ GetPlayers().forEach(async player => {
     await Wait(5);
 });
 
-function AddPlayerToCache(id) {
-    var name = GetPlayerName(id);
-    var Info = {
-        id: id,
-        name: name,
-        fullName: `[${id}] ${name}`
-    };
+function CreateInvite(from, to, club) {
+    if (!from || !to || !club) return false;
 
-    PlayersCache.set(id, Info);
-    DebugLog(`AddPlayerToCache: Added player ${id} to cache`);
-    DebugLog(JSON.stringify(Info));
-
-
-    return PlayersCache;
-}
-
-function RemovePlayerFromCache(id) {
-    if (!PlayersCache.has(id)) return false;
-    PlayersCache.delete(id);
-    DebugLog(`RemovePlayerFromCache: Removed player ${id} from cache`);
-    return true;
-}
-
-function GetPlayerFromCache(id) {
-    if (!PlayersCache.has(id)) return null;
-    return PlayersCache.get(id);
-}
-
-function SearchPlayerFromCacheWithName(name) {
-    if (!name) return false;
-
-    var result = null;
-    PlayersCache.forEach(player => {
-        if (player.name.toLowerCase().includes(name.toLowerCase())) {
-            result = player;
-            return;
-        }
+    InviteIds += 1;
+    PlayerInvites.push({
+        from: from,
+        to: to,
+        club: club,
+        inviteId: InviteIds
     });
+    
+    return InviteIds;
+}
 
-    return result;
+function GetPlayersInvites(id) {
+    return PlayerInvites.filter(Inv => parseInt(Inv.to) === id);
+}
+
+function IsPlayerInvitedToNightclub(id, club) {
+    if (!id || !club) return null;
+    var result = PlayerInvites.find(inv => inv.to === id && inv.club.id === club.id);
+    return (result ? true : false);
+}
+
+function GetInviteById(id) {
+    if (!id) return false;
+    var result = PlayerInvites.find(i => i.inviteId === id);
+    return (result ? result : null);
+}
+
+function DeleteInvite(id) {
+    if (!id) return false;
+    PlayerInvites = PlayerInvites.filter(i => i.inviteId !== id);
+    return PlayerInvites;
 }
 
 function SendClubsToClient(source) {
@@ -560,6 +599,7 @@ onNet('Nightclubs:ClubsRequest', () => {
     var source = global.source;
     DebugLog(`${GetPlayerFullName(source)} requested all nightclubs...`);
     SendClubsToClient(source);
+    if (!IsPlayerCached(source)) AddPlayerToCache(source);
 });
 
 on('onResourceStop', (resource) => { // TEST THIS
@@ -775,40 +815,30 @@ function CMD (source, args) {
             } else if (!Player) {
                 return emitNet('chat:addMessage', source, {args: ['^1Error', `Invalid player: ${args.slice(1).join(" ")}`]});
             } else if (GetNightclubPlayerIsIn(Player.id) && GetNightclubPlayerIsIn(Player.id) === InvitersClub.id) {
-                return  emitNet('chat:addMessage', source, {args: ['^1Error', `This player is already in your nightclub.`]});
-            } else if (PlayerInvites.find(i => parseInt(i.to) === parseInt(Player.id) && i.club.id === InvitersClub.id)) {
-                return  emitNet('chat:addMessage', source, {args: ['^1Error', `This player has already been invited to this nightclub.`]});
+                return emitNet('chat:addMessage', source, {args: ['^1Error', `This player is already in your nightclub.`]});
+            } else if (IsPlayerInvitedToNightclub(Player.id, InvitersClub)) {
+                return emitNet('chat:addMessage', source, {args: ['^1Error', `This player has already been invited to this nightclub.`]});
             }
 
-            var InviterInfo = {
-                name: GetPlayerName(source),
-                ped: GetPlayerPed(source)
-            }
-
-            InviteIds += 1;
+            var InviterInfo = GetPlayerFromCache(source);
 
             emitNet('Nightclubs:InviteNotification', Player.id, JSON.stringify(InviterInfo), JSON.stringify(InvitersClub), InviteIds);
             emitNet('chat:addMessage', source, {args: ['^2Success', `Invited ${Player.name} to ${InvitersClub.name}`]});
             
-            PlayerInvites.push({
-                from: source,
-                to: parseInt(Player.id),
-                club: InvitersClub,
-                inviteId: InviteIds
-            });
+            CreateInvite(source, Player.id, InvitersClub);
         break;
         case 'accept':
             if (!args[1]) return emitNet('chat:addMessage', source, {args: ['^1Syntax', `/club accept <Invite ID>. Use /club invites to view all your invites.`]});
-            var Invite = PlayerInvites.find(i => i.inviteId === parseInt(args[1]));
+            var Invite = GetInviteById(parseInt(args[0]));
             if (!Invite) {
                 return emitNet('chat:addMessage', source, {args: ['^1Error', `Invalid invite ID. Use /club invites to view all your invites.`]});
             } else if (GetNightclubPlayerIsIn(source)) return emitNet('chat:addMessage', source, {args: ['^1Error', `Leave your current nightclub first.`]});
             
-            PlayerInvites = PlayerInvites.filter(i => i.inviteId !== parseInt(args[1]));
+            DeleteInvite(parseInt(args[1]));
             emitNet('Nightclubs:TpToClubInside', source, JSON.stringify(Invite.club));
         break;
         case 'invites':
-            var Invites = PlayerInvites.filter(Inv => parseInt(Inv.to) === source); 
+            var Invites = GetPlayersInvites(source);
             if (Invites.length < 1) return emitNet('chat:addMessage', source, {args: ['^1Error', `You haven't been invited yet :(`]}); 
             var Fields = [{
                 Left_Text: "~HUD_COLOUR_GREY~Club name",
@@ -817,7 +847,7 @@ function CMD (source, args) {
             Invites.forEach(inv => {
                 Fields.push({
                     Left_Text: inv.club.name,
-                    Right_Text: "~l~"+inv.inviteId,
+                    Right_Text: "~l~" + inv.inviteId,
                     Right_Text_Background_Banner: 3
                 });
             });
