@@ -768,7 +768,7 @@ function CMD (source, args) {
             if (RoutingBucketEnabled) {
                 SetPlayerRoutingBucket(source, 0);
                 InVirtualWorld = InVirtualWorld.filter(p => p !== source);
-                DebugLog(`AcceptExitRequest: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
+                DebugLog(`CMD: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
             }
             RemovePlayerFromNightclubSession(source, Club);
             emitNet('Nightclubs:ExitNightClub', source, JSON.stringify(Club));
