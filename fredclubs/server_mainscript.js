@@ -764,7 +764,7 @@ function CMD (source, args) {
                 ]
             });
             
-            DebugLog(`AcceptExitRequest: Accepting request.....`);
+            DebugLog(`CMD: Removing player...`);
             if (RoutingBucketEnabled) {
                 SetPlayerRoutingBucket(source, 0);
                 InVirtualWorld = InVirtualWorld.filter(p => p !== source);
