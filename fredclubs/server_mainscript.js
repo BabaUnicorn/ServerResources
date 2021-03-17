@@ -2,10 +2,18 @@ var NightClubs = [
     {
         id: 1,
         coords: [194.859619, -3167.304, 5.790269851],
+        garageEntryCoords: [227.72196960, -3133.683837890, 5.79026985168336],
+        garageEnterZone: 2,
         pedHeading: 90,
+        pedHeading_Garage: 0,
         name: "Elysian Island",
         blipTextLabel: "NightclubsBlipName_1",
         description: "Forget homely blue-collar neighborhoods and picturesque abandoned factories. If you want a real challenge, try gentrifying a dockside slum that's knee-deep in industrial discharge and dead fish. If you can bring the A-listers here, you can bring them anywhere.",
+        image: {
+            url: 'https://i.imgur.com/Rr3Zfny.png',
+            size: [1024, 702], // width n height
+            txn: "elysian_island"
+        },
         blipColor: null,
         blipSprite: null,
         markerColor: null,
@@ -26,11 +34,19 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
-        ]
+        ],
+        IplLoadOnStartup: [
+            'ba_barriers_case7', 
+            'ba_case7_madonna' // ba_case7_taleofus, ba_case7_dixon, ba_case7_taleofus
+        ],
+        IplUnloadOnStartup: null
     },
     {
         id: 2,
         coords: [-676.9856567382812, -2458.77294921874, 13.944400787353516],
+        garageEntryCoords: [-665.5626220703125, -2379.70361328125, 13.913711547851562],
+        garageEnterZone: 2,
+        pedHeading_Garage: 50,
         pedHeading: 90,
         name: "LSIA",
         blipTextLabel: "NightclubsBlipName_1",
@@ -39,7 +55,7 @@ var NightClubs = [
         blipSprite: null,
         markerColor: null,
         enterZone: 1,
-        nearbyZone: 50, 
+        nearbyZone: 100, 
         djLightsStyle: 16, // 1-16
         interiorStyle: 1, // 1-4
         djStyle: 2, //1-4, which dj posters should be on the walls
@@ -55,11 +71,19 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
-        ]
+        ],
+        IplLoadOnStartup: [
+            'ba_barriers_case6',
+            'ba_case6_dixon'
+        ],
+        IplUnloadOnStartup: null
     },
     {
         id: 3,
         coords: [-1173.8505859374, -1153.390869140625, 5.657962799072266],
+        garageEntryCoords: [-1171.3313720803125, -1160.2467041015625, 5.643533606665039],
+        garageEnterZone: 2,
+        pedHeading_Garage: 270,
         pedHeading: 304,
         name: "Vespucci Canals",
         blipTextLabel: "NightclubsBlipName_1",
@@ -84,11 +108,23 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
+        ],
+        IplLoadOnStartup: [
+            'ba_case9_taleofus',
+            'ba_barriers_case9'
+        ],
+        IplUnloadOnStartup: null,
+        nearbyObjectsToHide: [
+            GetHashKey('prop_boxpile_02d'),
+            GetHashKey('prop_rub_cardpile_01')
         ]
     },
     {
         id: 4,
         coords: [870.64013, -2100.448730, 30.4558963],
+        garageEntryCoords: [891.0714111328125, -2094.29052734375, 30.74435043334961],
+        garageEnterZone: 2,
+        pedHeading_Garage: 0,
         pedHeading: 90,
         name: "Cypress Flats",
         blipTextLabel: "NightclubsBlipName_1",
@@ -113,11 +149,19 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
-        ]
+        ],
+        IplLoadOnStartup: [
+            'ba_barriers_case4',
+            'ba_case4_madonna'
+        ],
+        IplUnloadOnStartup: null
     },
     {
         id: 5,
         coords: [345.8825988769531, -977.84814453125, 29.375164031982422],
+        garageEntryCoords: [333.21881103515626, -996.3676513671875336, 29.253732681274414],
+        garageEnterZone: 2,
+        pedHeading_Garage: 180,
         pedHeading: 270,
         name: "Mission Row",
         blipTextLabel: "NightclubsBlipName_1",
@@ -142,11 +186,21 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
+        ],
+        IplLoadOnStartup: [
+            'ba_barriers_case1',
+            'ba_case1_dixon'
+        ],
+        IplUnloadOnStartup: [
+            'ba_case1_forsale'
         ]
     },
     {
         id: 6,
         coords: [758.0218505859375, -1332.5600000, 27.27522850033621],
+        garageEntryCoords: [767.849365234375, -1328.6657494140626, 26.22994692999336336],
+        garageEnterZone: 2,
+        pedHeading_Garage: 270,
         pedHeading: 270,
         name: "La Mesa",
         blipTextLabel: "NightclubsBlipName_1",
@@ -171,11 +225,19 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
-        ]
+        ],
+        IplLoadOnStartup: [
+            'ba_case0_madonna',
+            'ba_barriers_case0'
+        ],
+        IplUnloadOnStartup: null
     },
     {
         id: 7,
         coords: [-120.69123077, -1258.66028432904, 29.304134234],
+        garageEntryCoords: [-164.08103942771094, -1294.605712890625, 31.232319871111111111],
+        garageEnterZone: 2,
+        pedHeading_Garage: 180,
         pedHeading: 270,
         name: "Strawberry",
         blipTextLabel: "NightclubsBlipName_1",
@@ -184,7 +246,7 @@ var NightClubs = [
         blipSprite: null,
         markerColor: null,
         enterZone: 1,
-        nearbyZone: 50, 
+        nearbyZone: 100, 
         djLightsStyle: 10, // 1-16
         interiorStyle: 3, // 1-4
         djStyle: 4, //1-4, which dj posters should be on the walls
@@ -200,11 +262,21 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
+        ],
+        IplLoadOnStartup: [
+            'ba_case2_taleofus',
+            'ba_barriers_case2'
+        ],
+        IplUnloadOnStartup: [
+            'ba_case2_forsale'
         ]
     },
     {
         id: 8,
         coords: [-1285.7475597, -651.4150390, 26.58375358],
+        garageEntryCoords: [-1263.8533935546876, -657.4403076171875, 26.664925428933664],
+        garageEnterZone: 2,
+        pedHeading_Garage: 300,
         pedHeading: 30,
         name: "Del Perro",
         blipTextLabel: "NightclubsBlipName_1",
@@ -219,7 +291,6 @@ var NightClubs = [
         djStyle: 3, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
             'Int01_ba_trophy11',
-            'Int01_ba_trad_lights',
             'Int01_ba_booze_03',
             'Int01_ba_bar_content',
             'Int01_ba_Screen',
@@ -229,11 +300,19 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
-        ]
+        ],
+        IplLoadOnStartup: [
+            'ba_case5_solomun',
+            'ba_barriers_case5'
+        ],
+        IplUnloadOnStartup: null
     },
     {
         id: 9,
         coords: [371.3033447265625, 253.2254333490938, 103.0097427368164],
+        garageEntryCoords: [379.62298583984375, 227.6638641357422, 103.040725570800781],
+        garageEnterZone: 2,
+        pedHeading_Garage: 270,
         pedHeading: 0,
         name: "Downtown Vinewood",
         blipTextLabel: "NightclubsBlipName_1",
@@ -242,13 +321,12 @@ var NightClubs = [
         blipSprite: null,
         markerColor: null,
         enterZone: 1,
-        nearbyZone: 50, 
+        nearbyZone: 70, 
         djLightsStyle: 15, // 1-16
         interiorStyle: 3, // 1-4
         djStyle: 2, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
             'Int01_ba_trophy11',
-            'Int01_ba_trad_lights',
             'Int01_ba_booze_03',
             'Int01_ba_bar_content',
             'Int01_ba_Screen',
@@ -258,11 +336,28 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
+        ],
+        IplLoadOnStartup: [
+            'ba_barriers_case8',
+            'ba_case8_solomun'
+        ],
+        IplUnloadOnStartup: null,
+        nearbyObjectsToHide: [
+            GetHashKey('prop_dumpster_02b'),
+            GetHashKey('prop_dumpster_01a'),
+            GetHashKey('prop_rub_boxpile_06'),
+            GetHashKey('prop_rub_binbag_06'),
+            GetHashKey('prop_rub_binbag_03b'),
+            GetHashKey('prop_bin_07b'),
+            GetHashKey('prop_rub_boxpile_06')
         ]
     },
     {
         id: 10,
         coords: [4.677425384521484, 220.2642648468017578, 107.51250915527344],
+        garageEntryCoords: [-22.04743003845215, 217.9908905029287, 106.59608459472656],
+        garageEnterZone: 2,
+        pedHeading_Garage: 180,
         pedHeading: 30,
         name: "West Vinewood",
         blipTextLabel: "NightclubsBlipName_1",
@@ -287,27 +382,97 @@ var NightClubs = [
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01'
-        ]
+        ],
+        IplLoadOnStartup: [
+            'ba_barriers_case3',
+            'ba_case3_madonna'
+        ],
+        IplUnloadOnStartup: null
     },
     {
         id: 11,
         coords: [15.34983052, 6436.1967773437, 31.425300598144],
-        pedHeading: 30,
-        name: "Paleto Bay (Under Construction)",
-        blipTextLabel: "NightclubsBlipName_1",
+        garageEntryCoords: [32.33614831542969, 6446.662109375, 31.42527961730457],
+        garageEnterZone: 2,
+        pedHeading_Garage: 270,
+        pedHeading: 170,
+        name: "Paleto Bay",
+        blipTextLabel: null,
         description: null,
         blipColor: null,
         blipSprite: null,
-        markerColor: [100, 220, 100, 255],
+        markerColor: [0, 90, 199, 150],
         enterZone: 1,
         nearbyZone: 40, 
         djLightsStyle: null, // 1-16
         interiorStyle: 4, // 1-4
         djStyle: null, //1-4, which dj posters should be on the walls
         miscProps: null
-    }
+    },
+    {
+        id: 12,
+        coords: [1953.1041259765625, 3842.198486328125, 31.9798706054],
+        pedHeading: 300,
+        name: "Sandy Shores",
+        blipTextLabel: null,
+        description: "MEZZY",
+        blipColor: null,
+        blipSprite: null,
+        markerColor: null,
+        enterZone: 1.2,
+        nearbyZone: 100,
+        djLightsStyle: 2,
+        interiorStyle: 1,
+        djStyle: null,
+        miscProps: [
+            'Int01_ba_trad_lights',
+            'Int01_ba_booze_03',
+            'Int01_ba_bar_content',
+            'Int01_ba_deliverytruck',
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_Clutter'
+        ]
+    },
+    {
+        id: 13,
+        coords: [-379.3105163574219, 218.9581298828125, 83.65669250488281],
+        pedHeading: 0,
+        name: "HORNBILLS",
+        blipTextLabel: "NightclubsBlipName_1",
+        blipColor: null,
+        blipSprite: null,
+        markerColor: null,
+        enterZone: 1,
+        nearbyZone: 50, 
+        djLightsStyle: 13, // 1-16
+        interiorStyle: 2, // 1-4
+        djStyle: 2, //1-4, which dj posters should be on the walls
+        miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
+            'Int01_ba_trophy11',
+            'Int01_ba_trad_lights',
+            'Int01_ba_booze_03',
+            'Int01_ba_bar_content',
+            'Int01_ba_Screen',
+            'int01_ba_lights_screen',
+            'Int01_ba_deliverytruck',
+            'Int01_ba_dry_ice',
+            'Int01_ba_equipment_setup',
+            'Int01_ba_security_upgrade',
+            'Int01_ba_lightgrid_01'
+        ],
+        IplLoadOnStartup: null,
+        IplUnloadOnStartup: null
+    },
 ];
+var DebugLogsEnabled = true;
+var MyName = GetCurrentResourceName();
+var RoutingBucketEnabled = true;
+var NightclubsWorldId = 6;
+var InVirtualWorld = [];
 var Sessions = new Map();
+var PlayersCache = new Map();
+var PlayerInvites = [];
+var InviteIds = 0;
 var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : TickRate));
 
 NightClubs.forEach(club => {
@@ -317,13 +482,95 @@ NightClubs.forEach(club => {
     });
 });
 
+function DebugLog(text, bypass) {
+    if (DebugLogsEnabled || bypass) {
+        var date = new Date();
+        var time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+        console.log(`^6(${time}) ${MyName} debug: ^0${text}`);
+    }
+}
+
+function GetPlayerFullName(id) {
+    return `[${id}] ${GetPlayerName(id)}`
+}
+
+function GetPlayers() {
+    let t = []
+
+    for (let i = 0; i < GetNumPlayerIndices(); i++) {
+        t.push(GetPlayerFromIndex(i));
+    }
+
+    return t;
+}
+
+GetPlayers().forEach(async player => {
+    AddPlayerToCache(player);
+    await Wait(5);
+});
+
+function AddPlayerToCache(id) {
+    var name = GetPlayerName(id);
+    var Info = {
+        id: id,
+        name: name,
+        fullName: `[${id}] ${name}`
+    };
+
+    PlayersCache.set(id, Info);
+    DebugLog(`AddPlayerToCache: Added player ${id} to cache`);
+    DebugLog(JSON.stringify(Info));
+
+
+    return PlayersCache;
+}
+
+function RemovePlayerFromCache(id) {
+    if (!PlayersCache.has(id)) return false;
+    PlayersCache.delete(id);
+    DebugLog(`RemovePlayerFromCache: Removed player ${id} from cache`);
+    return true;
+}
+
+function GetPlayerFromCache(id) {
+    if (!PlayersCache.has(id)) return null;
+    return PlayersCache.get(id);
+}
+
+function SearchPlayerFromCacheWithName(name) {
+    if (!name) return false;
+
+    var result = null;
+    PlayersCache.forEach(player => {
+        if (player.name.toLowerCase().includes(name.toLowerCase())) {
+            result = player;
+            return;
+        }
+    });
+
+    return result;
+}
+
 function SendClubsToClient(source) {
+    DebugLog(`Sent ${NightClubs.length} clubs to ${GetPlayerFullName(source)}`);
     emitNet('Nightclubs:ClubsReceived', source, JSON.stringify(NightClubs))
 }
 
 onNet('Nightclubs:ClubsRequest', () => {
     var source = global.source;
+    DebugLog(`${GetPlayerFullName(source)} requested all nightclubs...`);
     SendClubsToClient(source);
+});
+
+on('onResourceStop', (resource) => { // TEST THIS
+    if (GetCurrentResourceName() === resource) {
+        DebugLog(`^1The resource has stopped.^0`);
+        InVirtualWorld.forEach(async p => {
+            DebugLog(`Set virtual world to 0 for player [${p}] ${GetPlayerName(p)} due to resource stop.`);
+            SetPlayerRoutingBucket(p, 0);
+            await Wait(5);
+        });
+    }
 });
 
 function GetNightclubById (id) {
@@ -348,6 +595,8 @@ function AddPlayerToNightclubSession(source, club) {
     Sessions.delete(club.id);
     Sessions.set(club.id, Session);
 
+    DebugLog(`AddPlayerToNightclubSession: Added player ${GetPlayerFullName(source)} to a nightclub (${club.id} ${club.name}) session.`);
+
     return Sessions;
 }
 
@@ -362,21 +611,27 @@ function GetPlayersFromNightclubsExcluding(clubId) {
         }
     });
 
-    console.log('GetPlayersFromNightclubsExcluding:')
-    console.log(Players)
+    DebugLog(`GetPlayersFromNightclubsExcluding: ${Players.length} players found`);
 
     return Players;
 }
 
-function AcceptEnterRequest(source, club) {
-    console.log('accepting enter req')
+async function AcceptEnterRequest(source, club, EnterMethod) {
+    DebugLog('AcceptEnterRequest: accepting enter req');
+    if (RoutingBucketEnabled) {
+        SetPlayerRoutingBucket(source, NightclubsWorldId);
+        InVirtualWorld.push(source);
+        DebugLog(`AcceptEnterRequest: Set routing bucket of ${GetPlayerFullName(source)} to ${NightclubsWorldId}`);
+    }
+
+    await Wait(1000);
+
     AddPlayerToNightclubSession(source, club);
     var Players = GetPlayersFromNightclubsExcluding(club.id);
-    emitNet("Nightclubs:EnterRequestAccepted", source, JSON.stringify(Players));
+    emitNet("Nightclubs:EnterRequestAccepted", source, JSON.stringify(Players), EnterMethod);
     var Time = 0;
     Players.forEach(async p => {
-
-        console.log(`Sending request to hide ${source} ${GetPlayerName(source)} (player who just entered) to player ${p.id} (${GetPlayerName(p)})`);
+        DebugLog(`AcceptEnterRequest: Sending request to hide ${source} ${GetPlayerFullName(source)} (player who just entered) to player ${p.id} (${GetPlayerFullName(p.id)})`);
         emitNet("Nightclubs:HidePlayer", p.id, source);
 
         Time += 10;
@@ -385,12 +640,8 @@ function AcceptEnterRequest(source, club) {
 }
 
 function RejectEnterRequest(source, club) {
+    DebugLog(`RejectEnterRequest: Rejected entry request of ${GetPlayerFullName(source)}`);
     emitNet("Nightclubs:EnterRequestRejected", source);
-}
-
-function AcceptExitRequest(source, club) {
-    RemovePlayerFromNightclubSession(source, club);
-    emitNet("Nightclubs:ExitRequestAccepted", source);
 }
 
 function RemovePlayerFromNightclubSession(source, club) {
@@ -401,7 +652,21 @@ function RemovePlayerFromNightclubSession(source, club) {
     Sessions.delete(club.id);
     Sessions.set(club.id, Session);
 
+    DebugLog(`RemovePlayerFromNightclubSession: Removed player ${GetPlayerFullName(source)} from session ${club.id}`);
+
     return Sessions; 
+}
+
+function AcceptExitRequest(source, club, Method) {
+    DebugLog(`AcceptExitRequest: Accepting request.....`);
+    if (RoutingBucketEnabled) {
+        SetPlayerRoutingBucket(source, 0);
+        InVirtualWorld = InVirtualWorld.filter(p => p !== source);
+        DebugLog(`AcceptExitRequest: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
+    }
+    RemovePlayerFromNightclubSession(source, club);
+    emitNet("Nightclubs:ExitRequestAccepted", source, Method);
+    DebugLog(`AcceptExitRequest: Accepted exit request with exit method ${Method}`);
 }
 
 function GetNightclubPlayerIsIn(source) {
@@ -417,17 +682,30 @@ function GetNightclubPlayerIsIn(source) {
     return currentClub;
 }
 
-onNet("Nightclubs:EnterRequest", (clubString) => {
+onNet("Nightclubs:EnterRequest", async (clubString, EnterMethod) => {
     var source = global.source;
+    DebugLog(`Nightclubs:EnterRequest: ${GetPlayerFullName(source)} requested entry...`);
     var club = JSON.parse(clubString);
     //RejectEnterRequest(source);
-    AcceptEnterRequest(source, club);
+    await AcceptEnterRequest(source, club, EnterMethod);
 });
 
-onNet("Nightclubs:ExitRequest", (clubString) => {
+onNet("Nightclubs:ExitRequest", (clubString, Method) => {
     var source = global.source;
+    DebugLog(`Nightclubs:ExitRequest: ${GetPlayerFullName(source)} requested exit...`);
     var club = JSON.parse(clubString);
-    AcceptExitRequest(source, club);
+    AcceptExitRequest(source, club, Method);
+});
+
+on('playerDropped', reason => {
+    var source = global.source;
+    var club = GetNightclubPlayerIsIn(source)
+    if (club) {
+        DebugLog(`${GetPlayerFullName(source)} dropped (reason: ${reason}) while inside a nightclub. Removing them from session...`);
+        RemovePlayerFromNightclubSession(source, club);
+        RemovePlayerFromCache(source);
+        InVirtualWorld = InVirtualWorld.filter(vwp => vwp !== source);
+    }
 });
 
 function CMD (source, args) {
@@ -439,11 +717,112 @@ function CMD (source, args) {
 
     switch (args[0].toLowerCase()) {
         case 'exit':
-            if (!GetNightclubPlayerIsIn(source)) return emitNet("Nightclubs:ExitCurrentNightClub", source, {
+            var Club = GetNightclubPlayerIsIn(source);
+            if (!Club) return emitNet("chat:addMessage", source, {
                 args: [
-                    "^1Error", "You aren't inside any nightclubs"
+                    "^1Error", "You aren't inside any nightclub."
                 ]
             });
+            
+            emitNet('Nightclubs:ExitNightClub', source, JSON.stringify(Club));
+        break;
+        case 'tp':
+        case 'teleport':
+            if (GetNightclubPlayerIsIn(source)) return emitNet("chat:addMessage", source, {
+                args: [
+                    "^1Error", "You already are inside a nightclub. Leave it first."
+                ]
+            });
+
+            var Club = NightClubs.find(nc => nc.name.toLowerCase().replace(/ /g, '').includes(args.slice(1).join('').toLowerCase()));
+            if (!Club) return emitNet("chat:addMessage", source, {
+                args: [
+                    "^1Error", "Incorrect nightclub name was specified."
+                ]
+            });
+
+            emitNet('Nightclubs:Tp', source, JSON.stringify(Club));
+        break;
+        case 'toggle':
+        case 'tog':
+            if (GetNightclubPlayerIsIn(source)) return emitNet("chat:addMessage", source, {
+                args: [
+                    "^1Error", "Unavailable while inside a nightclub."
+                ]
+            });
+
+            emitNet('Nightclubs:Toggle', source);
+        break;
+        case 'list':
+            var Fields = [];
+            Sessions.forEach(async session => {
+                Fields.push({
+                    Left_Text: ` ${session.Club.name}`,
+                    Right_Text: "~l~" + String(session.Players.length),
+                    Right_Text_Background_Banner: 3,
+                    _Players: session.Players.length
+                });
+            });
+            Fields = Fields.sort((a, b) => a._Players - b._Players).reverse();
+            emitNet('Nightclubs:Scoreboard', source, "NIGHTCLUBS", JSON.stringify(Fields));
+        break;
+        case 'invite':
+            if (!args[1]) return emitNet('chat:addMessage', source, {args: ['^1Error', 'Incorrect syntax.']})
+            var Player = SearchPlayerFromCacheWithName(args.slice(1).join(" "));
+            var InvitersClub = GetNightclubPlayerIsIn(source);
+            if (!InvitersClub) {
+                return emitNet('chat:addMessage', source, {args: ['^1Error', `You have to be in a Nightclub to invite others.`]});
+            } else if (!Player) {
+                return emitNet('chat:addMessage', source, {args: ['^1Error', `Invalid player: ${args.slice(1).join(" ")}`]});
+            } else if (GetNightclubPlayerIsIn(Player.id) && GetNightclubPlayerIsIn(Player.id) === InvitersClub.id) {
+                return  emitNet('chat:addMessage', source, {args: ['^1Error', `This player is already in your nightclub.`]});
+            } else if (PlayerInvites.find(i => parseInt(i.to) === parseInt(Player.id) && i.club.id === InvitersClub.id)) {
+                return  emitNet('chat:addMessage', source, {args: ['^1Error', `This player has already been invited to this nightclub.`]});
+            }
+
+            var InviterInfo = {
+                name: GetPlayerName(source),
+                ped: GetPlayerPed(source)
+            }
+
+            InviteIds += 1;
+
+            emitNet('Nightclubs:InviteNotification', Player.id, JSON.stringify(InviterInfo), JSON.stringify(InvitersClub), InviteIds);
+            emitNet('chat:addMessage', source, {args: ['^2Success', `Invited ${Player.name} to ${InvitersClub.name}`]});
+            
+            PlayerInvites.push({
+                from: source,
+                to: parseInt(Player.id),
+                club: InvitersClub,
+                inviteId: InviteIds
+            });
+        break;
+        case 'accept':
+            if (!args[1]) return emitNet('chat:addMessage', source, {args: ['^1Syntax', `/club accept <Invite ID>. Use /club invites to view all your invites.`]});
+            var Invite = PlayerInvites.find(i => i.inviteId === parseInt(args[1]));
+            if (!Invite) {
+                return emitNet('chat:addMessage', source, {args: ['^1Error', `Invalid invite ID. Use /club invites to view all your invites.`]});
+            } else if (GetNightclubPlayerIsIn(source)) return emitNet('chat:addMessage', source, {args: ['^1Error', `Leave your current nightclub first.`]});
+            
+            PlayerInvites = PlayerInvites.filter(i => i.inviteId !== parseInt(args[1]));
+            emitNet('Nightclubs:TpToClubInside', source, JSON.stringify(Invite.club));
+        break;
+        case 'invites':
+            var Invites = PlayerInvites.filter(Inv => parseInt(Inv.to) === source); 
+            if (Invites.length < 1) return emitNet('chat:addMessage', source, {args: ['^1Error', `You haven't been invited yet :(`]}); 
+            var Fields = [{
+                Left_Text: "~HUD_COLOUR_GREY~Club name",
+                Right_Text: "~HUD_COLOUR_GREY~Invite ID"
+            }];
+            Invites.forEach(inv => {
+                Fields.push({
+                    Left_Text: inv.club.name,
+                    Right_Text: "~l~"+inv.inviteId,
+                    Right_Text_Background_Banner: 3
+                });
+            });
+
+            emitNet('Nightclubs:Scoreboard', source, "NIGHTCLUBS", JSON.stringify(Fields));           
         break;
     }
 }
