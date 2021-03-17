@@ -26,8 +26,13 @@ RegisterCommand('tp', (source, args) => {
     }
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let srcWorld = GetPlayerRoutingBucket(source);
+    let resWorld = GetPlayerRoutingBucket(idResult);
     if(!idResult || idResult == null){
         emitNet('louBasics:tpNoArgs', source);
+    } else if(idResult && srcWorld !== resWorld){
+        SetPlayerRoutingBucket(source, resWorld)
+        emitNet('louBasics:tpDiffRBucket', source, GetPlayerName(idResult));
     } else {
         let destCoords = GetEntityCoords(GetPlayerPed(idResult));
         SetEntityCoords(source, destCoords[0], destCoords[1], destCoords[2], false, false, false, false);
