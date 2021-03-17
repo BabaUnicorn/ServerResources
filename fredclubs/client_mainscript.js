@@ -1,27 +1,37 @@
 var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : TickRate));
 var ClubsEnabled = true;
-var TickRate = 3;
+var DefaultTickRate = 3.5;
+var TickRate = DefaultTickRate;
 var PedId = PlayerPedId();
 var PedIdUpdateTickFrequency = 100; // every 100 ticks
 var PedIdUpdateTickCount = 0;
 var PlayerPedCoords = GetEntityCoords(PedId);
 var PlayerPedCoordsUpdateTickCount = 0;
 var PlayerPedCoordsUpdateTickFrequency = 90;
+var CurrentInteriorCheckTickCount = 0;
+var CurrentInteriorCheckTickFrequency = 500;
 var EnterControlType = 0;
 var EnterControlIndex = 51;
 var EnterControlButton = "~INPUT_CONTEXT~";
 var InsideClub = null;
 var EnteringClub = null;
+var ExitingClub = null;
 var LastClub = null;
 var LastClub2 = null;
+var LastClub3 = null;
+var ScreenIsBlurred = false;
 var LastCheckpoint = null;
+var LastGarageCheckpoint = null;
 var ExitCheckpoint = null;
+var GarageExitCheckpoint = null;
 var MinimapPositionLocked = false;
-var DebugLogsEnabled = false;
+var ClubsLastReceived = 0;
 var ClubInteriorId = 271617;
+var IplLoadedOnStartup = [];
+var IplUnloadedOnStartup = [];
 var ActiveInteriorEntitySets = [];
 var ConcealedPlayers = [];
-var InteriorCoords = [-1569.2620849609375, -3014.269287109375, -74.41017150878906];
+var InteriorGarageExitCoords = [-1642.57070078125, -2989.76953125, -76.9454879607422];
 var InteriorExitCoords = [-1569.38525390, -3016.544921875, -74.40615844];
 var NightClubs = [];
 
@@ -29,7 +39,8 @@ AddTextEntry("NightclubsNearbyClubHelpText", `Press ${EnterControlButton} to ent
 AddTextEntry("NightclubsNearbyClubExitHelpText", `Press ${EnterControlButton} to exit this nightclub`);
 
 function SetTickRate(tickRate) {
-    TickRate = tickRate;
+    TickRate = (tickRate ? tickRate : DefaultTickRate);
+    DebugLog(`Current tick rate: ${TickRate}`);
     return TickRate;
 }
 
@@ -43,9 +54,14 @@ function RequestNightClubsFromServer() {
         EndTextCommandBusyspinnerOn(4);
     }
 
+    DebugLog(`Requesting nightclubs`);
     emitNet('Nightclubs:ClubsRequest');
     onNet('Nightclubs:ClubsReceived', clubs => {
-        NightClubs = JSON.parse(clubs);
+        if (GetGameTimer() - ClubsLastReceived >= 100) { // due to console spam
+            ClubsLastReceived = GetGameTimer();
+            NightClubs = JSON.parse(clubs);
+            DebugLog(`Received ${NightClubs.length} nightclubs.^0\n${NightClubs.map(nc => `${nc.id} ${nc.name}`).join("\n")}`);
+        }
     });
 }
 
@@ -63,13 +79,61 @@ RequestNightClubsFromServer();
 
     if (ClubsEnabled) SetClubBlips(NightClubs);
 
-    function DebugLog(text) {
-        if (DebugLogsEnabled) {
-            var date = new Date();
-            var time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-            console.log(`^6${time} Debug: ^0${text}`);
-        }
+    function LoadClubIplsOnStartup () {
+        NightClubs.filter(nc => nc.IplLoadOnStartup).forEach(async nc => {
+            DebugLog(`LoadClubIplsOnStartup: Loading IPLs for ${nc.name}`);
+            if (nc.IplLoadOnStartup.length && nc.IplLoadOnStartup.length > 0) {
+                nc.IplLoadOnStartup.forEach(async ipl => {
+                    if (!IsIplActive(ipl)) {
+                        DebugLog(`LoadClubIplsOnStartup: Requesting Ipl ${ipl} of ${nc.name}`);
+                        RequestIpl(ipl);
+                        IplLoadedOnStartup.push(ipl);
+                        await Wait(100);
+                    }
+                });
+            }
+            await Wait(1000);
+        });
     }
+
+    function UnloadClubIpls() {
+        DebugLog(IplLoadedOnStartup);
+        IplLoadedOnStartup.forEach(async ipl => {
+            DebugLog(`UnloadClubIpls: Removing Ipl ${ipl}`);
+            RemoveIpl(ipl);
+            await Wait(100);
+        });
+        IplLoadedOnStartup.length = 0;
+    }
+
+    function UnloadClubIplsOnStartup () {
+        NightClubs.filter(nc => nc.IplUnloadOnStartup).forEach(async nc => {
+            DebugLog(`UnloadClubIplsOnStartup: Unloading IPLs for ${nc.name}`);
+            if (nc.IplUnloadOnStartup.length && nc.IplUnloadOnStartup.length > 0) {
+                nc.IplUnloadOnStartup.forEach(async ipl => {
+                    if (IsIplActive(ipl)) {
+                        DebugLog(`UnloadClubIplsOnStartup: Removing Ipl ${ipl} of ${nc.name}`);
+                        RemoveIpl(ipl);
+                        IplUnloadedOnStartup.push(ipl);
+                        await Wait(100);
+                    }
+                });
+            }
+            await Wait(1000);
+        });
+    }
+
+    function LoadUnloadedOnStartupIpls() {
+        IplUnloadedOnStartup.forEach(async ipl => {
+            DebugLog(`LoadUnloadedInStartupIpls: Loading ipl ${ipl}`);
+            RequestIpl(ipl);
+            await Wait(100);
+        });
+        IplUnloadedOnStartup.length = 0;
+    }
+
+    UnloadClubIplsOnStartup();
+    LoadClubIplsOnStartup();
 
     function GetNightclubById(id) {
         if (!id) return false;
@@ -99,20 +163,25 @@ RequestNightClubsFromServer();
 	}
 
     function HidePlayer (PlayerID) {
-        ConcealedPlayers.push(PlayerID);
-        return NetworkConcealPlayer(PlayerID, true);
+        if (PlayerID !== -1) {
+            DebugLog(`HidePlayer: Hiding player ${PlayerID}`);
+            ConcealedPlayers.push(PlayerID);
+            return NetworkConcealPlayer(PlayerID, true);
+        } else DebugLog(`HidePlayer: Specified player local ID is -1. This is our id.`);
     }
 
     function RemoveHiddenPlayer(PlayerID) {
+        DebugLog(`RemoveHidenPlayer: Removing hidden player ${PlayerID}`);
         ConcealedPlayers = ConcealedPlayers.filter(cp => cp !== PlayerID);
         return NetworkConcealPlayer(PlayerID, false);
     }
 
     function RemoveAllHiddenPlayers() {
+        DebugLog(`RemoveAllHiddenPlayers: Removing all hidden players`);
         ConcealedPlayers.forEach(async cp => {
             NetworkConcealPlayer(cp, false);
-            DebugLog('removing hidden player ' + cp)
-            await Wait(0);
+            DebugLog('Removing hidden player ' + cp)
+            await Wait(5);
         });
         ConcealedPlayers.length = 0;
     }
@@ -124,21 +193,54 @@ RequestNightClubsFromServer();
         if (club.markerColor && (club.markerColor.length && club.markerColor.length == 4)) color = club.markerColor;
         LastCheckpoint = CreateCheckpoint(49, club.coords[0], club.coords[1], club.coords[2] - 1, null, null, null, club.enterZone+1, color[0], color[1], color[2], color[3]);
         SetCheckpointCylinderHeight(LastCheckpoint, 1.65);
+
+        if (club.garageEntryCoords) {
+            LastGarageCheckpoint = CreateCheckpoint(49, club.garageEntryCoords[0], club.garageEntryCoords[1], club.garageEntryCoords[2] - 1, null, null, null, club.garageEnterZone+1.5, color[0], color[1], color[2], color[3]);
+            SetCheckpointCylinderHeight(LastGarageCheckpoint, 2.3);
+        }
+
+        if (club.nearbyObjectsToHide && (club.nearbyObjectsToHide.length && club.nearbyObjectsToHide.length > 0)) {
+            var Objpool = GetGamePool("CObject");
+            Objpool.forEach(async OBJ => {
+                if (club.nearbyObjectsToHide.find(obj2 => obj2 === GetEntityModel(OBJ))) {
+                    SetEntityCoords(OBJ, 0, 0, 0);
+                    DebugLog(`club.nearbyObjectsToHide: Moved object entity ${OBJ} to 0, 0, 0`);
+                }
+                await Wait(5000);
+            });
+        }
     }
 
     function JustExitedNightclubNearbyScope(club) {
         DebugLog(`we just exited scope of ${club.id}`)
         if (LastCheckpoint) {
             DeleteCheckpoint(LastCheckpoint);
+            LastCheckpoint = null;
         }
+        if (LastGarageCheckpoint) {
+            DeleteCheckpoint(LastGarageCheckpoint);
+            LastGarageCheckpoint = null;
+        }
+
+        LastClub = null;
     }
 
     function JustEnteredNightclubEnterScope(club) {
         DebugLog(`we just entered enter scope of ${club.id}`)
     }
 
+    function JustEnteredNightclubEnterScope_2(club) {
+        DebugLog(`we just entered garage enter scope of ${club.id}`)
+    }
+
     function JustExitedNightclubEnterScope(club) {
-        DebugLog(`we just exited enter scope of ${club.id}`)
+        DebugLog(`we just exited enter scope of ${club.id}`);
+        LastClub2 = null;
+    }
+
+    function JustExitedNightclubEnterScope_2(club) {
+        DebugLog(`we just exited garage enter scope of ${club.id}`);
+        LastClub3 = null;
     }
 
     var HasPrepared = false;
@@ -197,6 +299,7 @@ RequestNightClubsFromServer();
             }
             ActivateInteriorEntitySet(ClubInteriorId, name);
             ActiveInteriorEntitySets.push(name);
+            DebugLog(`Activated entity set ${name} (club.djLightsStyle)`);
         }
 
         if (club.interiorStyle) {
@@ -212,13 +315,14 @@ RequestNightClubsFromServer();
                     Props = ['Int01_ba_Style03', 'Int01_ba_Style03_podium'];
                 break;
                 case 4:
-                    Props = ['Int01_ba_Style01', 'Int01_ba_trad_lights', 'light_rigs_off', 'Int01_ba_equipment_setup', 'Int01_ba_Worklamps', 'Int01_ba_Clutter'];
+                    Props = ['Int01_ba_Style01', 'light_rigs_off', 'Int01_ba_Worklamps', 'Int01_ba_Clutter'];
                 break;
             }
 
             Props.forEach(async prop => {
                 ActivateInteriorEntitySet(ClubInteriorId, prop);
                 ActiveInteriorEntitySets.push(prop);
+                DebugLog(`Activated entity set ${prop} (club.interiorStyle). Interior style: ${club.interiorStyle}`);
                 await Wait(5);
             });
         }
@@ -240,11 +344,13 @@ RequestNightClubsFromServer();
             }
             ActivateInteriorEntitySet(ClubInteriorId, name);
             ActiveInteriorEntitySets.push(name);
+            DebugLog(`Activated entity set ${name} (club.djStyle)`);
         }
         if (club.miscProps) {
             club.miscProps.forEach(async p => {
                 ActivateInteriorEntitySet(ClubInteriorId, p);
                 ActiveInteriorEntitySets.push(p);
+                DebugLog(`Activated entity set ${p} (club.miscProps)`);
                 await Wait(50);
             });
         }
@@ -252,10 +358,10 @@ RequestNightClubsFromServer();
         await Wait(500);
 
         RefreshInterior(ClubInteriorId);
-        DebugLog(`Refreshed interior ${ClubInteriorId}. Active Interior sets:`);
-        DebugLog(ActiveInteriorEntitySets);
+        DebugLog(`Refreshed interior ${ClubInteriorId}. ${ActiveInteriorEntitySets.length} active Interior sets:\n${ActiveInteriorEntitySets.join("\n")}`);
 
         HasPrepared = true;
+        DebugLog(`Interior has finished preparing!`);
         setTimeout(() => {
             HasPrepared = false;
         }, 2);
@@ -267,20 +373,17 @@ RequestNightClubsFromServer();
 
     function RestartInterior() {
         ActiveInteriorEntitySets.forEach(async set => {
-            DebugLog(`Deactivating interior (${ClubInteriorId}) entity set ${set}`)
+            DebugLog(`RestartInterior: Deactivating interior (${ClubInteriorId}) entity set ${set}`)
             DeactivateInteriorEntitySet(ClubInteriorId, set);
             await Wait(10);
         });
 
         ActiveInteriorEntitySets.length = 0;
         RefreshInterior(ClubInteriorId);
+        DebugLog(`RestartInterior: Refreshed interior ${ClubInteriorId}`);
     }
 
-    RegisterCommand('restartinterior', () => {
-        RestartInterior();
-    });
-
-    async function NetworkOnResponse (response, extra, extra2) {
+    async function NetworkOnResponse (response, extra, extra2, extra3) {
         if (!response || InsideClub || !EnteringClub) return null;
 
         switch (response.toLowerCase()) {
@@ -298,41 +401,80 @@ RequestNightClubsFromServer();
             break;
             case 'accepted':
                 DebugLog(`NetworkOnResponse: accepted`);
-                EnteringClub = null;
-                InsideClub = extra;
+                DebugLog(`Loading: Stage 2, loading interior, hiding players, setting player in interior`);
 
-                SetEntityCoords(PedId, InteriorCoords[0], InteriorCoords[1], InteriorCoords[2]);
-                PlayerPedCoords = InteriorCoords;
                 BeginTextCommandBusyspinnerOn('MP_SPINLOADING');
                 EndTextCommandBusyspinnerOn(5);
 
-                function RequestCollision() {
-                    RequestCollisionAtCoord(InteriorCoords[0], InteriorCoords[1], InteriorCoords[2]);
-                    RequestAdditionalCollisionAtCoord(InteriorCoords[0], InteriorCoords[1], InteriorCoords[2]);
+                EnteringClub = null;
+                InsideClub = extra;
+
+                RemoveClubBlips();
+                SetInclubBlip(InsideClub);
+                SetExitBlip();
+                if (extra.garageEntryCoords) SetGarageBlip();
+
+                var Coords = null;
+                var EntryMethod2 = null;
+                switch (extra3) {
+                    case 1:
+                        DebugLog(`switch (extra3): case 1: Coords = InteriorCoords`);
+                        Coords = InteriorExitCoords;
+                        EntryMethod2 = "door";
+                    break;
+                    case 2:
+                        DebugLog(`switch (extra3): case 2: Coords = GarageInteriorCoords`);
+                        Coords = InteriorGarageExitCoords;
+                        EntryMethod2 = "garage";
+                    break;
+                    default:
+                        DebugLog(`switch (extra3): default: Coords = InteriorCoords`);
+                        Coords = InteriorExitCoords;
+                        EntryMethod2 = "door";
+                    break;
                 }
 
                 FreezeEntityPosition(PedId, true);
-                SetEntityHeading(PedId, 0);
+                SetEntityHeading(PedId, EntryMethod2 === 'door' ? 0 : 270);
                 SetGameplayCamRelativeHeading(0);
+                SetEntityCoords(PedId, Coords[0], Coords[1], Coords[2]);
+                PlayerPedCoords = Coords;
+                DebugLog(`Set player coords to ${PlayerPedCoords.join(', ')}`);
+
+                function RequestCollision() {
+                    DebugLog(`Requesting collision at interior coords ${InteriorExitCoords.join(', ')}`);
+                    RequestCollisionAtCoord(Coords[0], Coords[1], Coords[2]);
+                    RequestAdditionalCollisionAtCoord(Coords[0], Coords[1], Coords[2]);
+                }
 
                 while (!HasCollisionLoadedAroundEntity(PedId)) {
-                    SetEntityCoords(PedId, InteriorCoords[0], InteriorCoords[1], InteriorCoords[2]);
+                    SetEntityCoords(PedId, Coords[0], Coords[1], Coords[2]);
                     RequestCollision();
 
-                    await Wait(500);
+                    await Wait(50);
                 }
 
                 DebugLog(`Preparing nightclub interior`);
                 await PrepareNightclubInterior(extra);
                 while (!HasInteriorPrepared()) {
-                    await Wait(100);
+                    DebugLog(`Waiting for interior to prepare`);
+                    await Wait(50);
                 }
 
                 DeleteCheckpoint(LastCheckpoint);
                 LastCheckpoint = null;
+                if (LastGarageCheckpoint) {
+                    DeleteCheckpoint(LastGarageCheckpoint);
+                    LastGarageCheckpoint = null;
+                }
                 if (!ExitCheckpoint) {
                     ExitCheckpoint = CreateCheckpoint(49, InteriorExitCoords[0], InteriorExitCoords[1], InteriorExitCoords[2] - 1, null, null, null, 2, 255, 50, 50, 180);
                     SetCheckpointCylinderHeight(ExitCheckpoint, 1.65);
+                }
+                if (extra.garageEntryCoords) {
+                    if (GarageExitCheckpoint) DeleteCheckpoint(GarageExitCheckpoint);
+                    GarageExitCheckpoint = CreateCheckpoint(49, InteriorGarageExitCoords[0], InteriorGarageExitCoords[1], InteriorGarageExitCoords[2] - 1.5, null, null, null, 4.5, 255, 50, 50, 180);
+                    SetCheckpointCylinderHeight(GarageExitCheckpoint, 4);
                 }
 
                 DoScreenFadeOut();
@@ -341,9 +483,13 @@ RequestNightClubsFromServer();
                 BusyspinnerOff(); 
                 FreezeEntityPosition(PedId, false);
 
+                DebugLog(`Cloud loading screen stopped`);
+
                 await Wait(3000);
 
                 if (extra2) { // players to hide
+                    DebugLog(`Hiding players (extra2)`);
+                    DebugLog(`There are ${extra2.length} players to hide`);
                     extra2.forEach(async player => {
                         var Player = GetPlayerFromServerId(player.id);
                         if (Player !== PlayerId()) {
@@ -356,8 +502,8 @@ RequestNightClubsFromServer();
 
                         await Wait(30);
                     });
-                }
-                
+                }     
+
                 DoScreenFadeIn(2000);
 
                 BeginTextCommandThefeedPost('NightclubsWelcomeFeedPost');
@@ -366,7 +512,7 @@ RequestNightClubsFromServer();
         }
     }
 
-    async function NetworkRequestEntry (Club) {
+    async function NetworkRequestEntry (Club, EntryMethod) {
         if (!Club) return false;
         DebugLog(`NetworkRequestEntry: Requesting entry`);
 
@@ -375,19 +521,28 @@ RequestNightClubsFromServer();
         InsideClub = null;
 
         StartupLoadingScreen();
+        while (!IsLoadingScreenActive()) {
+            await Wait(1);
+        }
 
         await Wait(2000);
+
+        DebugLog(`Loading: Stage 1, Requesting entry and players to hide`);
 
         BeginTextCommandBusyspinnerOn('FMMC_DOWNLOAD');
         EndTextCommandBusyspinnerOn(4);
 
-		emitNet("Nightclubs:EnterRequest", JSON.stringify(EnteringClub));
+		emitNet("Nightclubs:EnterRequest", JSON.stringify(EnteringClub), EntryMethod);
 		onNet("Nightclubs:EnterRequestRejected", () => {
 			NetworkOnResponse("rejected");
 		});
-		onNet("Nightclubs:EnterRequestAccepted", async (PlayersToHide) => {
+		onNet("Nightclubs:EnterRequestAccepted", async (PlayersToHide, EntryMethod) => {
+            DebugLog(`Enter request accepted. Players to hide:`);
+            DebugLog(PlayersToHide);
+            DebugLog(`Entry method:`);
+            DebugLog(EntryMethod);
             await Wait(1000);
-			NetworkOnResponse("accepted", EnteringClub, JSON.parse(PlayersToHide));
+			NetworkOnResponse("accepted", EnteringClub, JSON.parse(PlayersToHide), EntryMethod);
 		});
 
         var StartedWaiting = GetGameTimer();
@@ -404,7 +559,7 @@ RequestNightClubsFromServer();
                     NetworkOnResponse('timeout');
 
                     setTimeout(() => {
-                        NetworkRequestEntry(Club.id);
+                        NetworkRequestEntry(Club.id, EntryMethod);
                         DoScreenFadeIn(1000);
                     }, 3000);
                 } else if (IsControlJustReleased(2, 202)) {
@@ -416,31 +571,239 @@ RequestNightClubsFromServer();
         }
     }
 
-    async function ExitNightclub(Club) {
+    async function ExitNightclub(Club, ExitType) {
         if (!Club) return false;
+
+        DebugLog(`ExitNightclub`);
 
         InsideClub = null;
         EnteringClub = null;
         LastClub = null;
         LastClub2 = null;
+        CurrentInteriorCheckTickCount = 0;
 
         DeleteCheckpoint(ExitCheckpoint);
         ExitCheckpoint = null;
+        if (GarageExitCheckpoint) {
+            DeleteCheckpoint(GarageExitCheckpoint);
+            GarageExitCheckpoint = null;
+        }
 
-        DoScreenFadeOut(1500);
+        DoScreenFadeOut(500);
 
         while (IsScreenFadingOut()) {
             await Wait(1);
         }
 
+        DebugLog(`ExitNightclub: Restarting interior, removing hidden players`);
+        SetClubBlips(NightClubs);
+        RemoveInclubBlip();
+        RemoveExitBlip();
+        RemoveGarageBlip();
         RestartInterior();
         RemoveAllHiddenPlayers();
+        if (MinimapPositionLocked) {
+            MinimapPositionLocked = false;
+            UnlockMinimapAngle();
+            UnlockMinimapPosition();
+        }
+
+        var ExitedVia = null;
+        var ExitCoords = Club.coords;
+        switch (ExitType) {
+            case 1: 
+                DebugLog(`ExitCoords: Case 1, normal exit`);
+                ExitCoords = Club.coords;
+                ExitedVia = 'door';
+            break;
+            case 2:
+                DebugLog(`ExitCoords: Case 2, garage`);
+                ExitCoords = Club.garageEntryCoords;
+                ExitedVia = 'garage';
+            break;
+            default:
+                DebugLog(`ExitCoords: Case 3, default`);
+                ExitCoords = Club.coords;
+                ExitedVia = 'door';
+            break;
+        }
 
         function RequestCollision() {
+            DebugLog(`Requesting collision`);
+            RequestCollisionAtCoord(ExitCoords[0], ExitCoords[1], ExitCoords[2]);
+            RequestAdditionalCollisionAtCoord(ExitCoords[0], ExitCoords[1], ExitCoords[2]);
+        }
+
+        DebugLog(`Teleporting player to club exterior (${ExitCoords.join(', ')})`);
+        FreezeEntityPosition(PedId, true);
+        SetEntityCoords(PedId, ExitCoords[0], ExitCoords[1], ExitCoords[2]);
+        DebugLog(`Club.pedHeading_Garage = ` + Club.pedHeading_Garage);
+        DebugLog(`Club.pedHeading = ${Club.pedHeading}`);
+        DebugLog(`ExitedVia = ${ExitedVia}`);
+        SetEntityHeading(PedId, (ExitedVia === 'garage' ? Club.pedHeading_Garage : Club.pedHeading));
+        SetGameplayCamRelativeHeading(0);
+
+        while (!HasCollisionLoadedAroundEntity(PedId)) {
+            SetEntityCoords(PedId, ExitCoords[0], ExitCoords[1], ExitCoords[2]);
+            RequestCollision();
+
+            await Wait(500);
+        }
+
+        ExitingClub = null;
+
+        FreezeEntityPosition(PedId, false);
+
+        await Wait(1000);
+
+        DoScreenFadeIn(2000);
+    }
+
+    async function NetworkRequestExit(Method) { 
+        if (!InsideClub) return false;
+
+        if (!Method) Method = 1;
+        DebugLog(`NetworkRequestExit: (1) Method = ${Method}`);
+
+        ExitingClub = InsideClub;
+
+        BeginTextCommandBusyspinnerOn();
+        EndTextCommandBusyspinnerOn(4);
+
+        DebugLog(`NetworkRequestExit: Requesting exit with method ${Method}`);
+
+        var KeepLooping = true;
+        emitNet("Nightclubs:ExitRequest", JSON.stringify(InsideClub), Method);
+		onNet("Nightclubs:ExitRequestAccepted", async (Method2) => {	
+            BusyspinnerOff();
+            KeepLooping = false;
+            DebugLog(`NetworkRequestExit: Exit request was accepted by server`);
+            DebugLog(`NetworkRequestExit: (2) Method = ${Method}`);
+            DebugLog(`NetworkRequestExit: (3) Method2 = ${Method2}`);
+			ExitNightclub(InsideClub, Method2);
+		});
+
+        var StartedWaiting = GetGameTimer();
+        while (KeepLooping) {
+            var CurrentTime = GetGameTimer();
+            
+            SetMouseCursorActiveThisFrame();
+            DisableControlAction(0, 1, true); //camera movement left right
+            DisableControlAction(0, 2, true); // camer movement left right
+
+            if (CurrentTime - StartedWaiting >= 10000) {
+                if (!ScreenIsBlurred) {
+                    TriggerScreenblurFadeIn(500);
+                    ScreenIsBlurred = true;
+                }
+
+                SetWarningMessageWithHeader("HUD_ALERT", "NightclubsServerTakingTooLongWarningMessageBody", 134217748, false, false, false, false);
+                
+                if (IsControlJustReleased(2, 201)) {
+                    ScreenIsBlurred = false;
+                    TriggerScreenblurFadeOut(1);
+                    DoScreenFadeOut();
+
+                    ExitingClub = null;
+                    KeepLooping = false;
+
+                    setTimeout(async () => {
+                        DoScreenFadeIn(1000);
+                        if (InsideClub) await NetworkRequestExit(Method);
+                    }, 2000);
+                } else if (IsControlJustReleased(2, 202)) {
+                    ScreenIsBlurred = false;
+                    TriggerScreenblurFadeOut(1);
+                    KeepLooping = false;
+                    ExitingClub = null;
+                    BusyspinnerOff();
+                }               
+            }
+
+            await Wait(3);
+        }
+    }
+
+    function ToggleNightclubs() {
+        if (EnteringClub || InsideClub || ExitingClub) {
+            DebugLog(`Minigame won't be toggled due to the player either entering, exiting or being inside a nightclub...`);
+            return false;
+        }
+
+        if (ClubsEnabled) {
+            ClubsEnabled = false;
+            DebugLog(`ClubsEnabled = ${ClubsEnabled}`);
+            RemoveClubBlips();
+            BeginTextCommandThefeedPost('NightclubsToggled');
+            AddTextComponentSubstringPlayerName('~r~disabled~w~');
+            EndTextCommandThefeedPostTicker(false, true);
+            LastClub = null;
+            LastClub2 = null;
+            LastClub3 = null;
+            SetTickRate(1000);
+            if (LastCheckpoint) {
+                DeleteCheckpoint(LastCheckpoint);
+                LastCheckpoint = null;
+                DebugLog(`ToggleNightclubs: Removed entrance marker checkpoint. Current checkpoint: ${LastCheckpoint} (Should be null)`);
+            }
+            if (LastGarageCheckpoint) {
+                DeleteCheckpoint(LastGarageCheckpoint);
+                LastGarageCheckpoint = null;
+                DebugLog(`ToggleNightclubs: Removed garage entrance marker checkpoint. Current checkpoint: ${LastGarageCheckpoint} (Should be null)`);
+            }
+        } else {
+            SetTickRate(null);
+            ClubsEnabled = true;
+            DebugLog(`ClubsEnabled = ${ClubsEnabled}`);
+            SetClubBlips(NightClubs);
+            BeginTextCommandThefeedPost('NightclubsToggled');
+            AddTextComponentSubstringPlayerName('~g~enabled~w~');
+            EndTextCommandThefeedPostTicker(false, true);
+        }
+    }
+
+    on('onResourceStop', (resource) => {
+        if (GetCurrentResourceName() === resource) {
+            if (ActiveInteriorEntitySets.length > 0) RestartInterior();
+            RemoveAllHiddenPlayers();
+            UnloadClubIpls();
+            LoadUnloadedOnStartupIpls();
+            if (IsLoadingScreenActive()) StopLoadingScreen();
+        }
+    });
+
+    onNet("Nightclubs:Toggle", () => ToggleNightclubs());
+
+    onNet("Nightclubs:ExitNightClub", (club) => {
+        ExitNightclub(JSON.parse(club));
+    });
+
+    onNet('Nightclubs:HidePlayer', async (playerServerId) => {
+        await Wait(1500);
+        
+        var PlayerLocalId = GetPlayerFromServerId(playerServerId);
+
+        if (PlayerLocalId !== PlayerId()) HidePlayer(PlayerLocalId);
+
+        DebugLog("Hid player (Nightclubs:HidePlayer)")
+        DebugLog(playerServerId)
+        DebugLog(PlayerLocalId)
+    });
+
+    onNet("Nightclubs:Tp", async Club => {
+        if (!Club) return;
+
+        Club = JSON.parse(Club);
+
+        DoScreenFadeOut();
+
+        function RequestCollision() {
+            DebugLog(`Requesting collision`);
             RequestCollisionAtCoord(Club.coords[0], Club.coords[1], Club.coords[2]);
             RequestAdditionalCollisionAtCoord(Club.coords[0], Club.coords[1], Club.coords[2]);
         }
 
+        DebugLog(`Teleporting player to club exterior (${Club.coords.join(', ')})`);
         FreezeEntityPosition(PedId, true);
         SetEntityCoords(PedId, Club.coords[0], Club.coords[1], Club.coords[2]);
         SetEntityHeading(PedId, Club.pedHeading);
@@ -454,44 +817,17 @@ RequestNightClubsFromServer();
         }
 
         FreezeEntityPosition(PedId, false);
-
-        await Wait(1000);
-
-        DoScreenFadeIn(2000);
-    }
-
-    async function NetworkRequestExit() {
-        if (!InsideClub) return false;
-
-        BeginTextCommandBusyspinnerOn();
-        EndTextCommandBusyspinnerOn(4);
-
-        emitNet("Nightclubs:ExitRequest", JSON.stringify(InsideClub));
-		onNet("Nightclubs:ExitRequestAccepted", async () => {	
-            BusyspinnerOff();
-			ExitNightclub(InsideClub); 
-		});
-    }
-
-    onNet("Nightclubs:ExitCurrentNightClub", () => {
-        ExitNightclub(InsideClub);
+        DoScreenFadeIn(1500);
     });
 
-    on('onResourceStop', (resource) => {
-        if (GetCurrentResourceName() === resource) {
-            RestartInterior();
-            RemoveAllHiddenPlayers();
+    onNet("Nightclubs:TpToClubInside", async clubInfo => {
+        clubInfo = JSON.parse(clubInfo);
+        if (EnteringClub || ExitingClub || InsideClub) {
+            BeginTextCommandThefeedPost("NightclubsErrorUnavailable");
+            return EndTextCommandThefeedPostTicker(true, true);
         }
-    });
-
-    onNet('Nightclubs:HidePlayer', async (playerServerId) => {
-        await Wait(1500);
         
-        if (playerServerId !== PlayerId()) HidePlayer(GetPlayerFromServerId(playerServerId));
-
-        DebugLog("Hid player (Nightclubs:HidePlayer)")
-        DebugLog(playerServerId)
-        DebugLog(GetPlayerFromServerId(playerServerId))
+        await NetworkRequestEntry(clubInfo.id, 1);
     });
 
     while (true) {
@@ -504,11 +840,14 @@ RequestNightClubsFromServer();
             } else if (PlayerPedCoordsUpdateTickCount >= PlayerPedCoordsUpdateTickFrequency) {
                 PlayerPedCoords = GetEntityCoords(PedId);
                 PlayerPedCoordsUpdateTickCount = 0;
-            } else if (!EnteringClub && !InsideClub) {
+            } 
+
+            if (!EnteringClub && !InsideClub) {
                 var Nearby = NightClubs.find(nc => IsEntityNearNightclub(PedId, nc.id, PlayerPedCoords));
                 if (Nearby) {
                     var Distance = Get3dDistance(PlayerPedCoords[0], PlayerPedCoords[1], PlayerPedCoords[2], Nearby.coords[0], Nearby.coords[1], Nearby.coords[2]);
-            
+                    var DistanceFromGarage = (Nearby.garageEntryCoords ? Get3dDistance(PlayerPedCoords[0], PlayerPedCoords[1], PlayerPedCoords[2], Nearby.garageEntryCoords[0], Nearby.garageEntryCoords[1], Nearby.garageEntryCoords[2]) : null);
+
                     if (Nearby.id !== LastClub) {
                         LastClub = Nearby.id;
                         JustEnteredNightclubNearbyScope(Nearby);
@@ -517,15 +856,24 @@ RequestNightClubsFromServer();
                             LastClub2 = Nearby.id;
                             JustEnteredNightclubEnterScope(Nearby);
                         } else if (IsControlJustReleased(EnterControlType, EnterControlIndex)) {
-                            await NetworkRequestEntry(Nearby.id);
+                            await NetworkRequestEntry(Nearby.id, 1);
                         }
-                        // help text below displays without the if condition despite line 463?
-                        if (!EnteringClub && !InsideClub) DisplayHelpTextThisFrame(`NightclubsNearbyClubHelpText`);
-                    } else if (LastClub2 && Distance > Nearby.enterZone) {
-                        JustExitedNightclubEnterScope(GetNightclubById(LastClub2));
-                        LastClub2 = null;
-                    }
 
+                        if (!IsLoadingScreenActive()) DisplayHelpTextThisFrame(`NightclubsNearbyClubHelpText`);
+                    } else if (Distance > Nearby.enterZone && LastClub2) {
+                        JustExitedNightclubEnterScope(Nearby);
+                    } else if (DistanceFromGarage < Nearby.garageEnterZone) {
+                        if (Nearby.id !== LastClub3) {
+                            LastClub3 = Nearby.id;
+                            JustEnteredNightclubEnterScope_2(Nearby);
+                        } else if (IsControlJustReleased(EnterControlType, EnterControlIndex)) {
+                            await NetworkRequestEntry(Nearby.id, 2);
+                        }
+
+                        if (!IsLoadingScreenActive()) DisplayHelpTextThisFrame(`NightclubsNearbyClubHelpText`);
+                    } else if (DistanceFromGarage > Nearby.garageEnterZone && LastClub3) {
+                        JustExitedNightclubEnterScope_2(Nearby);
+                    }
                 } else if (!Nearby && LastClub) {
                     JustExitedNightclubNearbyScope(GetNightclubById(LastClub));
                     LastClub = null;
@@ -533,11 +881,23 @@ RequestNightClubsFromServer();
             } 
             
             if (InsideClub && !EnteringClub) {
-                if (Get3dDistance(PlayerPedCoords[0], PlayerPedCoords[1], PlayerPedCoords[2], InteriorExitCoords[0], InteriorExitCoords[1], InteriorExitCoords[2]) < 1) {
-                    DisplayHelpTextThisFrame("NightclubsNearbyClubExitHelpText");
-                    if (IsControlJustReleased(EnterControlType, EnterControlIndex)) {
-                        NetworkRequestExit();
+                CurrentInteriorCheckTickCount += 1;
+                var DistanceFromDoor = Get3dDistance(PlayerPedCoords[0], PlayerPedCoords[1], PlayerPedCoords[2], InteriorExitCoords[0], InteriorExitCoords[1], InteriorExitCoords[2]);
+                var DistanceFromGarage = (InsideClub.garageEntryCoords ? Get3dDistance(PlayerPedCoords[0], PlayerPedCoords[1], PlayerPedCoords[2], InteriorGarageExitCoords[0], InteriorGarageExitCoords[1], InteriorGarageExitCoords[2]) : 9999999999);
+                if (DistanceFromDoor < 1.1) {
+                    if (!IsLoadingScreenActive()) DisplayHelpTextThisFrame("NightclubsNearbyClubExitHelpText");
+
+                    if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub) {
+                        NetworkRequestExit(1);
+                        DebugLog(`REQUESTING EXIT 1`);
                     }
+                } else if (DistanceFromGarage < 2.5) {
+                    if (!IsLoadingScreenActive()) DisplayHelpTextThisFrame("NightclubsNearbyClubExitHelpText");
+
+                    if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub) {
+                        NetworkRequestExit(2);
+                        DebugLog(`REQUESTING EXIT 2`);
+                    }                    
                 }
 
                 DisableControlAction(0, 24, true);
@@ -549,13 +909,29 @@ RequestNightClubsFromServer();
                     SetPlayerBlipPositionThisFrame(InsideClub.coords[0], InsideClub.coords[1]);
                     if (!MinimapPositionLocked) {
                         LockMinimapPosition(InsideClub.coords[0], InsideClub.coords[1]);
+                        LockMinimapAngle();
+                        SetBlipDisplay(ExitBlip, 0);
+                        SetBlipDisplay(GarageBlip, 0);
                         MinimapPositionLocked = true;
                     }
-                } else if (!PauseMenuActive) {
+                } else {
                     HideMinimapExteriorMapThisFrame();
                     if (MinimapPositionLocked) {
+                        SetBlipDisplay(ExitBlip, 10);
+                        SetBlipDisplay(GarageBlip, 10);
                         UnlockMinimapPosition();
+                        UnlockMinimapAngle();
                         MinimapPositionLocked = false;
+                    }
+                }
+
+                if (CurrentInteriorCheckTickCount >= CurrentInteriorCheckTickFrequency) { 
+                    var CurrentInterior = GetInteriorFromEntity(PlayerPedId());
+                    if (CurrentInterior !== ClubInteriorId && (InsideClub && !ExitingClub && !EnteringClub)) {
+                        DebugLog(`Player isn't inside the nightclub interior, removing and unloading...`);
+                        BeginTextCommandThefeedPost('NightclubsOutOfInterior');
+                        EndTextCommandThefeedPostTicker(true, true);
+                        NetworkRequestExit(1);
                     }
                 }
             }
@@ -568,14 +944,9 @@ RequestNightClubsFromServer();
 RegisterCommand('clubsdebug', () => {
     if (DebugLogsEnabled) {
         DebugLogsEnabled = false;
-        console.log(`DebugLogsEnabled = false`);
+        DebugLog(`DebugLogsEnabled = false`, true);
     } else {
         DebugLogsEnabled = true;
-        console.log(`DebugLogsEnabled = true`);
+        DebugLog(`DebugLogsEnabled = true`, true);
     }
-});
-RegisterCommand('pedheading', () => {
-    BeginTextCommandThefeedPost("STRING");
-    AddTextComponentSubstringPlayerName(String(GetEntityHeading(PlayerPedId())));
-    EndTextCommandThefeedPostTicker(true, true);
 });
