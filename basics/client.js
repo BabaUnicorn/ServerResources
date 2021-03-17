@@ -14,8 +14,15 @@ AddTextEntry("DM_RECEIVED", "~a~");
 AddTextEntry("DM_SENT", "~a~");
 AddTextEntry('JOIN_MSG', '~a~ ~g~joined.~s~');
 AddTextEntry('LEAVE_MSG', '~a~ ~r~left.~s~');
-AddTextEntry('RB_NO_ARGS', '~r~Server ID is invalid, or virtual world argument is missing!~n~~h~Usage:~s~ /vworld id world');
+AddTextEntry('RB_NO_ARGS', '~r~Arguments missing, switching to world 0...~n~~h~Usage:~s~ /vworld id world');
 AddTextEntry('RB_SWITCHED', 'Your virtual world has been set to ~a~');
+AddTextEntry('WARNING_TITLE', 'WARNING!');
+AddTextEntry('GM_ON', 'Godmode ~g~on.');
+AddTextEntry('GM_OFF', 'Godmode ~r~off.');
+AddTextEntry('VGM_ON', 'Vehicle godmode ~g~on.');
+AddTextEntry('VGM_OFF', 'Vehicle godmode ~r~off.');
+AddTextEntry('WARNING_SUBTITLE', '~r~Please do not ignore the following message.');
+AddTextEntry('WARNING_NO_ARGS', '~r~Server ID is invalid, or message is missing!~n~~h~Usage:~s~ /warn id message')
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
@@ -26,9 +33,90 @@ emit('chat:addSuggestion', '/get', 'Teleport another player to you', [{name: 'Se
 emit('chat:addSuggestion', '/kick', 'Kick a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Reason', help: 'Note: the player will see the reason!'}])
 emit('chat:addSuggestion', '/dm', 'Send a private message to a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Message', help: 'Express yourself!'}])
 emit('chat:addSuggestion', '/vworld', 'Change player virtual world', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Virtual world', help: 'Number of the virtual world'}]);
+emit('chat:addSuggestion', '/warn', 'Warn a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Reason', help: 'Note: the player will see the reason!'}])
 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
+
+async function warningsMsg(msg){
+    let loop = true
+    AddTextEntry('WARNING_MSG', msg);
+    PlaySoundFrontend(-1, 'OTHER_TEXT', 'HUD_AWARDS');
+    while(loop){
+        //SetWarningMessage('WARNING_SUBTITLE', 2, 'WARNING_MSG', 0, -1, true, 0, 0, 0)
+        DrawFrontendAlert('WARNING_TITLE', 'WARNING_SUBTITLE', 2, 0, 'WARNING_MSG', 0, -1, 0, 0, 0, -1, 0);
+        if(IsControlJustReleased(2, 201)){
+            loop = false
+        }
+        await WAIT(0);
+    }
+}
+
+onNet('louBasics:warningMsg', (msg) => {
+    warningsMsg(msg);
+})
+
+function invincibilityOn(){
+    SetPlayerInvincible(PlayerId(), true)
+    BeginTextCommandThefeedPost('GM_ON');
+    AddTextComponentSubstringPlayerName('GM_ON');
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+function invincibilityOff(){
+    SetPlayerInvincible(PlayerId(), false)
+    BeginTextCommandThefeedPost('GM_OFF');
+    AddTextComponentSubstringPlayerName('GM_OFF');
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+onNet('louBasics:invincibilityOn', () => {
+    invincibilityOn();
+})
+
+onNet('louBasics:invincibilityOff', () => {
+    invincibilityOff();
+})
+
+function vehInvincibilityOn(){
+    if(!IsPedInAnyVehicle(PlayerPedId())){
+        noVehicle();
+    } else {
+        SetEntityInvincible(GetVehiclePedIsIn(PlayerPedId()), true)
+        BeginTextCommandThefeedPost('VGM_ON');
+        AddTextComponentSubstringPlayerName('VGM_ON');
+        EndTextCommandThefeedPostTicker(true, false);
+    }   
+}
+
+function vehInvincibilityOff(){
+    if(!IsPedInAnyVehicle(PlayerPedId())){
+        noVehicle();
+    } else {
+        SetEntityInvincible(GetVehiclePedIsIn(PlayerPedId()), false)
+        BeginTextCommandThefeedPost('VGM_OFF');
+        AddTextComponentSubstringPlayerName('VGM_OFF');
+        EndTextCommandThefeedPostTicker(true, false);
+    }   
+}
+
+onNet('louBasics:vehInvincibilityOn', () => {
+    vehInvincibilityOn();
+})
+
+onNet('louBasics:vehInvincibilityOff', () => {
+    vehInvincibilityOff();
+})
+
+function warnNoArgs(){
+    BeginTextCommandThefeedPost('WARNING_NO_ARGS');
+    AddTextComponentSubstringPlayerName('WARNING_NO_ARGS');
+    EndTextCommandThefeedPostTicker(true, false);
+}
+
+onNet('louBasics:warningNoArgs', () => {
+    warnNoArgs();
+})
 
 function rbNoArgs(){
     BeginTextCommandThefeedPost('RB_NO_ARGS');
