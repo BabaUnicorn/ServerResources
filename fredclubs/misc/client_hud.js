@@ -489,6 +489,9 @@ onNet('Nightclubs:Bigfeed', Bigfeed);
 onNet("Nightclubs:Scoreboard", Scoreboard);
 onNet("Nightclubs:WarningMessage", WarningMessage);
 onNet("Nightclubs:InviteNotification", InviteNotification);
+onNet("Nightclubs:DistantLights", (toggle) => {
+    SetArtificialLightsState(toggle);
+});
 
 RegisterCommand('nightclubs::bigfeeddebug', () => Bigfeed());
 RegisterCommand('nightclubs::scoreboarddebug', () => Scoreboard());
