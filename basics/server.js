@@ -26,8 +26,6 @@ RegisterCommand('tp', (source, args) => {
     }
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
-    let srcWorld = GetPlayerRoutingBucket(source);
-    let resWorld = GetPlayerRoutingBucket(idResult);
     if(!idResult || idResult == null){
         emitNet('louBasics:tpNoArgs', source);
     } else {
