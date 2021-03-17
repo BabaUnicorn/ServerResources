@@ -65,7 +65,7 @@ function RequestNightClubsFromServer() {
     });
 }
 
-RequestNightClubsFromServer();
+//RequestNightClubsFromServer(); 
 
 (async function() {
     while (!HaveClubsBeenReceived()) {
