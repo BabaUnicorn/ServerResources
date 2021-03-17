@@ -764,6 +764,13 @@ function CMD (source, args) {
                 ]
             });
             
+            DebugLog(`AcceptExitRequest: Accepting request.....`);
+            if (RoutingBucketEnabled) {
+                SetPlayerRoutingBucket(source, 0);
+                InVirtualWorld = InVirtualWorld.filter(p => p !== source);
+                DebugLog(`AcceptExitRequest: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
+            }
+            RemovePlayerFromNightclubSession(source, Club);
             emitNet('Nightclubs:ExitNightClub', source, JSON.stringify(Club));
         break;
         case 'tp':
@@ -860,16 +867,6 @@ RegisterCommand('club', CMD);
 RegisterCommand('clubs', CMD);
 RegisterCommand('nightclub', CMD);
 RegisterCommand('nightclubs', CMD);
-var toggle = false;
-RegisterCommand('lights', (source, args) => {
-    if (toggle) {
-        emitNet('Nightclubs:DistantLights', -1, false);
-        toggle = false;
-    } else {
-        emitNet('Nightclubs:DistantLights', -1, true);
-        toggle = true;
-    }
-});
 /*RegisterCommand('clubseval', (source, args) => {
     const evaled = eval(args.join(" "));
     console.log(evaled)
