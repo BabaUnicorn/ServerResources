@@ -27,10 +27,13 @@ var GarageExitCheckpoint = null;
 var MinimapPositionLocked = false;
 var ClubsLastReceived = 0;
 var ClubInteriorId = 271617;
+var LastEnteredAt = 0;
+var LastExitedAt = 0;
 var IplLoadedOnStartup = [];
 var IplUnloadedOnStartup = [];
 var ActiveInteriorEntitySets = [];
 var ConcealedPlayers = [];
+var Cooldowns = new Map();
 var InteriorGarageExitCoords = [-1642.57070078125, -2989.76953125, -76.9454879607422];
 var InteriorExitCoords = [-1569.38525390, -3016.544921875, -74.40615844];
 var NightClubs = [];
@@ -78,6 +81,21 @@ function RequestNightClubsFromServer() {
     BusyspinnerOff();
 
     if (ClubsEnabled) SetClubBlips(NightClubs);
+
+    function SetCooldown(code, time) {
+        if (!code || !time) return false;
+
+        Cooldowns.set(code, true);
+        setTimeout(() => {
+            Cooldowns.delete(code);
+        }, time);
+
+        return true;
+    }
+
+    function IsCooldownActive(code) {
+        return (Cooldowns.has(code) ? true : false);
+    }
 
     function LoadClubIplsOnStartup () {
         NightClubs.filter(nc => nc.IplLoadOnStartup).forEach(async nc => {
@@ -482,6 +500,7 @@ function RequestNightClubsFromServer() {
                 StopLoadingScreen();
                 BusyspinnerOff(); 
                 FreezeEntityPosition(PedId, false);
+                LastEnteredAt = Date.now();
 
                 DebugLog(`Cloud loading screen stopped`);
 
@@ -512,8 +531,21 @@ function RequestNightClubsFromServer() {
         }
     }
 
-    async function NetworkRequestEntry (Club, EntryMethod) {
-        if (!Club) return false;
+    function IsSafeToExit() {
+        return (((Date.now() - LastEnteredAt) > 7000) ? true : false);
+    }
+
+    function IsSafeToEnter() {
+        return (((Date.now() - LastExitedAt) > 5000) ? true : false);
+    }
+
+    async function NetworkRequestEntry(Club, EntryMethod) {
+        if (!Club) {
+            return false;
+        } else if (!IsSafeToEnter()) {
+            BeginTextCommandThefeedPost("NightclubsErrorUnavailable");
+            return EndTextCommandThefeedPostTicker(true, true);
+        }
         DebugLog(`NetworkRequestEntry: Requesting entry`);
 
         Club = GetNightclubById(Club);
@@ -537,12 +569,16 @@ function RequestNightClubsFromServer() {
 			NetworkOnResponse("rejected");
 		});
 		onNet("Nightclubs:EnterRequestAccepted", async (PlayersToHide, EntryMethod) => {
-            DebugLog(`Enter request accepted. Players to hide:`);
-            DebugLog(PlayersToHide);
-            DebugLog(`Entry method:`);
-            DebugLog(EntryMethod);
-            await Wait(1000);
-			NetworkOnResponse("accepted", EnteringClub, JSON.parse(PlayersToHide), EntryMethod);
+            if (!IsCooldownActive('Nightclubs:EnterRequestAccepted')) {
+                SetCooldown('Nightclubs:EnterRequestAccepted', 50);
+
+                DebugLog(`Enter request accepted. Players to hide:`);
+                DebugLog(PlayersToHide);
+                DebugLog(`Entry method:`);
+                DebugLog(EntryMethod);
+                await Wait(1000);
+                NetworkOnResponse("accepted", EnteringClub, JSON.parse(PlayersToHide), EntryMethod);
+            }
 		});
 
         var StartedWaiting = GetGameTimer();
@@ -572,7 +608,12 @@ function RequestNightClubsFromServer() {
     }
 
     async function ExitNightclub(Club, ExitType) {
-        if (!Club) return false;
+        if (!Club) {
+            return false;
+        } else if (!IsSafeToExit()) {
+            BeginTextCommandThefeedPost('NightclubsErrorUnavailable');
+            return EndTextCommandThefeedPostTicker(true, true);
+        }
 
         DebugLog(`ExitNightclub`);
 
@@ -651,6 +692,7 @@ function RequestNightClubsFromServer() {
         }
 
         ExitingClub = null;
+        LastExitedAt = Date.now();
 
         FreezeEntityPosition(PedId, false);
 
@@ -660,7 +702,12 @@ function RequestNightClubsFromServer() {
     }
 
     async function NetworkRequestExit(Method) { 
-        if (!InsideClub) return false;
+        if (!InsideClub) {
+            return false;
+        } else if (!IsSafeToExit()) {
+            BeginTextCommandThefeedPost('NightclubsErrorUnavailable');
+            return EndTextCommandThefeedPostTicker(true, true);
+        }
 
         if (!Method) Method = 1;
         DebugLog(`NetworkRequestExit: (1) Method = ${Method}`);
@@ -672,56 +719,17 @@ function RequestNightClubsFromServer() {
 
         DebugLog(`NetworkRequestExit: Requesting exit with method ${Method}`);
 
-        var KeepLooping = true;
         emitNet("Nightclubs:ExitRequest", JSON.stringify(InsideClub), Method);
-		onNet("Nightclubs:ExitRequestAccepted", async (Method2) => {	
-            BusyspinnerOff();
-            KeepLooping = false;
-            DebugLog(`NetworkRequestExit: Exit request was accepted by server`);
-            DebugLog(`NetworkRequestExit: (2) Method = ${Method}`);
-            DebugLog(`NetworkRequestExit: (3) Method2 = ${Method2}`);
-			ExitNightclub(InsideClub, Method2);
-		});
-
-        var StartedWaiting = GetGameTimer();
-        while (KeepLooping) {
-            var CurrentTime = GetGameTimer();
-            
-            SetMouseCursorActiveThisFrame();
-            DisableControlAction(0, 1, true); //camera movement left right
-            DisableControlAction(0, 2, true); // camer movement left right
-
-            if (CurrentTime - StartedWaiting >= 10000) {
-                if (!ScreenIsBlurred) {
-                    TriggerScreenblurFadeIn(500);
-                    ScreenIsBlurred = true;
-                }
-
-                SetWarningMessageWithHeader("HUD_ALERT", "NightclubsServerTakingTooLongWarningMessageBody", 134217748, false, false, false, false);
-                
-                if (IsControlJustReleased(2, 201)) {
-                    ScreenIsBlurred = false;
-                    TriggerScreenblurFadeOut(1);
-                    DoScreenFadeOut();
-
-                    ExitingClub = null;
-                    KeepLooping = false;
-
-                    setTimeout(async () => {
-                        DoScreenFadeIn(1000);
-                        if (InsideClub) await NetworkRequestExit(Method);
-                    }, 2000);
-                } else if (IsControlJustReleased(2, 202)) {
-                    ScreenIsBlurred = false;
-                    TriggerScreenblurFadeOut(1);
-                    KeepLooping = false;
-                    ExitingClub = null;
-                    BusyspinnerOff();
-                }               
+		onNet("Nightclubs:ExitRequestAccepted", async (Method2) => {
+            if (!IsCooldownActive('Nightclubs:ExitRequestAccepted')) {
+                SetCooldown('Nightclubs:ExitRequestAccepted', 50);
+                BusyspinnerOff();
+                DebugLog(`NetworkRequestExit: Exit request was accepted by server`);
+                DebugLog(`NetworkRequestExit: (2) Method = ${Method}`);
+                DebugLog(`NetworkRequestExit: (3) Method2 = ${Method2}`);
+                ExitNightclub(InsideClub, Method2);
             }
-
-            await Wait(3);
-        }
+		});
     }
 
     function ToggleNightclubs() {
@@ -775,7 +783,10 @@ function RequestNightClubsFromServer() {
     onNet("Nightclubs:Toggle", () => ToggleNightclubs());
 
     onNet("Nightclubs:ExitNightClub", (club) => {
-        ExitNightclub(JSON.parse(club));
+        if (!IsCooldownActive("Nightclubs:ExitNightClub")) {
+            SetCooldown("Nightclubs:ExitNightClub", 50);
+            ExitNightclub(JSON.parse(club));
+        }
     });
 
     onNet('Nightclubs:HidePlayer', async (playerServerId) => {
@@ -855,7 +866,8 @@ function RequestNightClubsFromServer() {
                         if (Nearby.id !== LastClub2) {
                             LastClub2 = Nearby.id;
                             JustEnteredNightclubEnterScope(Nearby);
-                        } else if (IsControlJustReleased(EnterControlType, EnterControlIndex)) {
+                        } else if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !IsCooldownActive('ENTRY_REQUEST_1')) {
+                            SetCooldown("ENTRY_REQUEST_1", 1000);
                             await NetworkRequestEntry(Nearby.id, 1);
                         }
 
@@ -866,7 +878,8 @@ function RequestNightClubsFromServer() {
                         if (Nearby.id !== LastClub3) {
                             LastClub3 = Nearby.id;
                             JustEnteredNightclubEnterScope_2(Nearby);
-                        } else if (IsControlJustReleased(EnterControlType, EnterControlIndex)) {
+                        } else if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !IsCooldownActive('ENTRY_REQUEST_2')) {
+                            SetCooldown('ENTRY_REQUEST_2', 1000);
                             await NetworkRequestEntry(Nearby.id, 2);
                         }
 
@@ -887,14 +900,16 @@ function RequestNightClubsFromServer() {
                 if (DistanceFromDoor < 1.1) {
                     if (!IsLoadingScreenActive()) DisplayHelpTextThisFrame("NightclubsNearbyClubExitHelpText");
 
-                    if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub) {
+                    if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_1')) {
+                        SetCooldown('EXIT_REQUEST_1', 1000);
                         NetworkRequestExit(1);
                         DebugLog(`REQUESTING EXIT 1`);
                     }
                 } else if (DistanceFromGarage < 2.5) {
                     if (!IsLoadingScreenActive()) DisplayHelpTextThisFrame("NightclubsNearbyClubExitHelpText");
 
-                    if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub) {
+                    if (IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_2')) {
+                        SetCooldown("EXIT_REQUEST_2", 1000);
                         NetworkRequestExit(2);
                         DebugLog(`REQUESTING EXIT 2`);
                     }                    
