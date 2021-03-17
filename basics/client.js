@@ -27,6 +27,7 @@ AddTextEntry('WARNING_SUCCESS', 'You have warned ~a~.');
 
 emit('chat:addSuggestion', '/fix', 'Fix your vehicle.', []);
 emit('chat:addSuggestion', '/dv', 'Delete your vehicle.', []);
+emit('chat:addSuggestion', '/godmode', 'Enable or disable godmode.', []);
 emit('chat:addSuggestion', '/v', 'Spawn a vehicle.', [{name: 'model', help: 'Vehicle to spawn'}]);
 emit('chat:addSuggestion', '/tp', 'Teleport to another player', [{name: 'Server ID', help: 'Player\'s server ID'}])
 emit('chat:addSuggestion', '/vcolor', 'Set vehicle primary and secondary color, defaults to white if no values are provided.', [{name: 'R', help: 'Red value'},{name: 'G', help: 'Green value'},{name: 'B', help: 'Blue value'}])
