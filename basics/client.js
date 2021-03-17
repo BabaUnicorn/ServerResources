@@ -375,9 +375,11 @@ RegisterCommand('vcolor', (source, args, r, g, b) => {
 RegisterCommand('godmode', (source) => {
     if(!godmode){
         godmode = true
-        SetPlayerInvincible(PlayerPedId(), true);
+        SetPlayerInvincible(PlayerId(), false);
+        invincibilityOff();
     } else if (godmode){
         godmode = false
-        SetPlayerInvincible(PlayerPedId(), false);
+        SetPlayerInvincible(PlayerId(), true);
+        invincibilityOn();
     }
 })
