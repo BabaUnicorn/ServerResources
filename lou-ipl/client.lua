@@ -145,3 +145,52 @@ RequestIpl(northyankton[27])
 RequestIpl(northyankton[28])
 RequestIpl(northyankton[29])
 RequestIpl(northyankton[30])
+
+local bikers = {
+    'bkr_biker_interior_placement_interior_0_biker_dlc_int_01_milo',
+    'bkr_biker_interior_placement_interior_1_biker_dlc_int_02_milo',
+    'bkr_biker_interior_placement_interior_2_biker_dlc_int_ware01_milo',
+    'bkr_biker_interior_placement_interior_3_biker_dlc_int_ware02_milo',
+    'bkr_biker_interior_placement_interior_4_biker_dlc_int_ware03_milo',
+    'bkr_biker_interior_placement_interior_5_biker_dlc_int_ware04_milo',
+    'bkr_biker_interior_placement_interior_6_biker_dlc_int_ware05_milo',
+    'ex_exec_warehouse_placement_interior_1_int_warehouse_s_dlc_milo',
+    'ex_exec_warehouse_placement_interior_0_int_warehouse_m_dlc_milo',
+    'ex_exec_warehouse_placement_interior_2_int_warehouse_l_dlc_milo',
+    'imp_impexp_interior_placement_interior_1_impexp_intwaremed_milo_',
+    'bkr_bi_hw1_13_int'
+}
+
+RequestIpl(bikers[0])
+RequestIpl(bikers[1])
+RequestIpl(bikers[2])
+RequestIpl(bikers[3])
+RequestIpl(bikers[4])
+RequestIpl(bikers[5])
+RequestIpl(bikers[6])
+RequestIpl(bikers[7])
+RequestIpl(bikers[8])
+RequestIpl(bikers[9])
+RequestIpl(bikers[10])
+
+local misc = {
+    'SUNK_SHIP_FIRE',
+    'redCarpet',
+    'DES_StiltHouse_imapend',
+    'FINBANK',
+    'TrevorsTrailerTidy',
+    'SP1_10_real_interior',
+    'refit_unload',
+    'post_heist_unload',
+    'FIBlobby'
+}
+
+RequestIpl(misc[0])
+RequestIpl(misc[1])
+RequestIpl(misc[2])
+RequestIpl(misc[3])
+RequestIpl(misc[4])
+RequestIpl(misc[5])
+RequestIpl(misc[6])
+RequestIpl(misc[7])
+RequestIpl(misc[8])
