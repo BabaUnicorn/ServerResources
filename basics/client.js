@@ -378,6 +378,6 @@ RegisterCommand('godmode', (source) => {
         SetPlayerInvincible(PlayerPedId(), true);
     } else if (godmode){
         godmode = false
-        SetPlayerInvincible(PlayerPedId(), true);
+        SetPlayerInvincible(PlayerPedId(), false);
     }
 })
