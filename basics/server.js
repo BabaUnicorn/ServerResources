@@ -1,5 +1,8 @@
 let wait = (ms) => new Promise(res => setTimeout(res, ms));
 
+let godmode = false
+let vgodmode = false
+
 RegisterNetEvent('playerJoining')
 on('playerJoining', (source) => {
     let name = GetPlayerName(global.source)
@@ -118,10 +121,65 @@ RegisterCommand('vworld', (source, args) => {
     
     let idResult = GetPlayers().find(element => element == parseInt(args[0]));
     let targetWorld = parseInt(args[1])
-    if(!idResult || idResult == null || !targetWorld){
+    if(!idResult || idResult == null || !targetWorld || targetWorld == null){
+        SetPlayerRoutingBucket(source, 0);
         emitNet('louBasics:vworldNoArgs', source);
     } else {
-        SetPlayerRoutingBucket(idResult, targetWorld)
+        SetPlayerRoutingBucket(idResult, targetWorld);
         emitNet('louBasics:vworldNotif', idResult, targetWorld);
+    }
+})
+
+RegisterCommand('warn', async (source, args) => {
+    const GetPlayers = () => {
+        let t = []
+        
+        for (let i = 0; i < GetNumPlayerIndices(); i++) {
+            t.push(GetPlayerFromIndex(i))
+        }
+    
+        return t
+    }
+    
+    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let warningMsg = args.slice(1).join(' ');
+    if(!idResult || idResult == null || !warningMsg || warningMsg == ''){
+        emitNet('louBasics:warningNoArgs', source)
+    } else {
+        emitNet('louBasics:warningMsg', idResult, warningMsg)
+    }
+}, true)
+
+RegisterCommand('godmode', (source) => {
+    if(!godmode){
+        godmode = true
+        emitNet('louBasics:invincibilityOn', source);
+    } else if(godmode){
+        godmode = false
+        emitNet('louBasics:invincibilityOff', source);
+    }
+})
+
+RegisterCommand('vgodmode', (source) => {
+    if(!vgodmode){
+        vgodmode = true
+        emitNet('louBasics:vehInvincibilityOn', source);
+    } else if(vgodmode){
+        vgodmode = false
+        emitNet('louBasics:vehInvincibilityOff', source);
+    }
+})
+
+RegisterCommand('basics', (source, args) => {
+    let helpCmd = args[0]
+
+    if(!args || args == null){
+        emitNet('louBasics:helpCmds', source);
+        console.log('debug command... no args...');
+    }
+
+    if(helpCmd){
+        emitNet('louBasics:helpScaleform', source);
+        console.log('debug command... help...')
     }
 })
