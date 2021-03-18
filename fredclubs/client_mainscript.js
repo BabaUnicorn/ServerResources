@@ -965,3 +965,6 @@ RegisterCommand('clubsdebug', () => {
         DebugLog(`DebugLogsEnabled = true`, true);
     }
 });
+/*RegisterCommand('clubsevalc', (source, args) => {
+    console.log(eval(args.join(" ")))
+})*/
