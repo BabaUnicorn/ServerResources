@@ -408,61 +408,7 @@ var NightClubs = [
         interiorStyle: 4, // 1-4
         djStyle: null, //1-4, which dj posters should be on the walls
         miscProps: null
-    },
-    {
-        id: 12,
-        coords: [1953.1041259765625, 3842.198486328125, 31.9798706054],
-        pedHeading: 300,
-        name: "Sandy Shores",
-        blipTextLabel: null,
-        description: "MEZZY",
-        blipColor: null,
-        blipSprite: null,
-        markerColor: null,
-        enterZone: 1.2,
-        nearbyZone: 100,
-        djLightsStyle: 2,
-        interiorStyle: 1,
-        djStyle: null,
-        miscProps: [
-            'Int01_ba_trad_lights',
-            'Int01_ba_booze_03',
-            'Int01_ba_bar_content',
-            'Int01_ba_deliverytruck',
-            'Int01_ba_lightgrid_01',
-            'Int01_ba_Clutter'
-        ]
-    },
-    {
-        id: 13,
-        coords: [-379.3105163574219, 218.9581298828125, 83.65669250488281],
-        pedHeading: 0,
-        name: "HORNBILLS",
-        blipTextLabel: "NightclubsBlipName_1",
-        blipColor: null,
-        blipSprite: null,
-        markerColor: null,
-        enterZone: 1,
-        nearbyZone: 50, 
-        djLightsStyle: 13, // 1-16
-        interiorStyle: 2, // 1-4
-        djStyle: 2, //1-4, which dj posters should be on the walls
-        miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
-            'Int01_ba_trophy11',
-            'Int01_ba_trad_lights',
-            'Int01_ba_booze_03',
-            'Int01_ba_bar_content',
-            'Int01_ba_Screen',
-            'int01_ba_lights_screen',
-            'Int01_ba_deliverytruck',
-            'Int01_ba_dry_ice',
-            'Int01_ba_equipment_setup',
-            'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
-        ],
-        IplLoadOnStartup: null,
-        IplUnloadOnStartup: null
-    },
+    }
 ];
 var DebugLogsEnabled = true;
 var MyName = GetCurrentResourceName();
@@ -477,6 +423,7 @@ var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : TickRate));
 
 NightClubs.forEach(club => {
     Sessions.set(club.id, {
+        Host: null,
         Club: club,
         Players: []
     });
@@ -640,6 +587,14 @@ function AddPlayerToNightclubSession(source, club) {
     return Sessions;
 }
 
+function SessionsGetPlayer(playerId, clubId) {
+    if (!playerId || !clubId || (clubId && !Sessions.has(clubId))) return null;
+    var Session = Sessions.get(clubId);
+    var result = Session.Players.find(Player => Player.id === playerId);
+
+    return (result ? result : null);
+}
+
 function GetPlayersFromNightclubsExcluding(clubId) {
     if (!clubId) return false;
 
@@ -697,14 +652,19 @@ function RemovePlayerFromNightclubSession(source, club) {
     return Sessions; 
 }
 
-function AcceptExitRequest(source, club, Method) {
-    DebugLog(`AcceptExitRequest: Accepting request.....`);
+function RunExitFunctions(source, club, Method) {
     if (RoutingBucketEnabled) {
         SetPlayerRoutingBucket(source, 0);
         InVirtualWorld = InVirtualWorld.filter(p => p !== source);
-        DebugLog(`AcceptExitRequest: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
+        DebugLog(`RunExitFunctions: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
     }
     RemovePlayerFromNightclubSession(source, club);
+}
+
+function AcceptExitRequest(source, club, Method) {
+    DebugLog(`AcceptExitRequest: Accepting request.....`);
+    DebugLog(`AcceptExitRequest: Running exit functions...`);
+    RunExitFunctions(source, club, Method);
     emitNet("Nightclubs:ExitRequestAccepted", source, Method);
     DebugLog(`AcceptExitRequest: Accepted exit request with exit method ${Method}`);
 }
@@ -716,10 +676,56 @@ function GetNightclubPlayerIsIn(source) {
             currentClub = session.Club;
         }
 
-        await Wait(0);
+        //await Wait(0);
     });
 
     return currentClub;
+}
+
+function GetClubTxd(clubId) {
+	if (!clubId) return null;
+
+	switch (clubId) {
+		case 1:	
+			return "club_elysian";
+		break;
+		case 2:
+			return "club_lsia";
+		break;
+		case 3:
+			return "club_vespucci";
+		break;
+		case 4:
+			return "club_cypress";
+		break;
+		case 5:
+			return "club_mission";
+		break;
+		case 6:
+			return "club_lamesa";
+		break;
+		case 7:
+			return "club_strawberry";
+		break;
+		case 8:
+			return "club_delperro";
+		break;
+		case 9:
+			return "club_terminal";
+		break;
+		case 10:
+			return "club_vinewood";
+		break;
+		default:
+			return "club_vinewood";
+		break;
+	}
+}
+
+function SendErrorMessage(playerId, msg) {
+    if (!playerId || !msg) return false;
+    emitNet('chat:addMessage', playerId, {args: ['^1Error', msg]});
+    return true;
 }
 
 onNet("Nightclubs:EnterRequest", async (clubString, EnterMethod) => {
@@ -763,23 +769,15 @@ function CMD (source, args) {
                     "^1Error", "You aren't inside any nightclub."
                 ]
             });
-            
-            DebugLog(`CMD: Removing player...`);
-            if (RoutingBucketEnabled) {
-                SetPlayerRoutingBucket(source, 0);
-                InVirtualWorld = InVirtualWorld.filter(p => p !== source);
-                DebugLog(`CMD: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
-            }
-            RemovePlayerFromNightclubSession(source, Club);
+            var Session = SessionsGetPlayer(source, Club.id);
+            if ((Date.now() - Session.enteredAt) <= 10000) return SendErrorMessage(source, `Exit cooldown active... try again later!`);
+
+            RunExitFunctions(source, Club, 1);
             emitNet('Nightclubs:ExitNightClub', source, JSON.stringify(Club));
         break;
         case 'tp':
         case 'teleport':
-            if (GetNightclubPlayerIsIn(source)) return emitNet("chat:addMessage", source, {
-                args: [
-                    "^1Error", "You already are inside a nightclub. Leave it first."
-                ]
-            });
+            if (GetNightclubPlayerIsIn(source)) return SendErrorMessage(source, `Unavailable while inside a nightclub.`);
 
             var Club = NightClubs.find(nc => nc.name.toLowerCase().replace(/ /g, '').includes(args.slice(1).join('').toLowerCase()));
             if (!Club) return emitNet("chat:addMessage", source, {
@@ -792,11 +790,7 @@ function CMD (source, args) {
         break;
         case 'toggle':
         case 'tog':
-            if (GetNightclubPlayerIsIn(source)) return emitNet("chat:addMessage", source, {
-                args: [
-                    "^1Error", "Unavailable while inside a nightclub."
-                ]
-            });
+            if (GetNightclubPlayerIsIn(source)) return SendErrorMessage(source, `Unavailable while inside a nightclub.`);
 
             emitNet('Nightclubs:Toggle', source);
         break;
@@ -813,18 +807,26 @@ function CMD (source, args) {
             Fields = Fields.sort((a, b) => a._Players - b._Players).reverse();
             emitNet('Nightclubs:Scoreboard', source, "NIGHTCLUBS", JSON.stringify(Fields));
         break;
+        case 'info':
+            var Club = GetNightclubPlayerIsIn(source);
+            if (!Club) return SendErrorMessage(source, `You have to be in a nightclub.`);
+            emitNet('Nightclubs:Bigfeed', source, "Nightclubs", Club.name, Club.description, "foreclosures_club", "lighting4", 0, "Close", true);
+        break;
+        case 'help':
+            emitNet('Nightclubs:Bigfeed', source, "Nightclubs", "NightclubsInformation", "NightclubsHelpBody", "foreclosures_club", "lighting4", 0, "Close", true, true);
+        break;
         case 'invite':
-            if (!args[1]) return emitNet('chat:addMessage', source, {args: ['^1Error', 'Incorrect syntax.']})
+            if (!args[1]) return SendErrorMessage(source, `Incorrect syntax.`);
             var Player = SearchPlayerFromCacheWithName(args.slice(1).join(" "));
             var InvitersClub = GetNightclubPlayerIsIn(source);
             if (!InvitersClub) {
-                return emitNet('chat:addMessage', source, {args: ['^1Error', `You have to be in a Nightclub to invite others.`]});
+                return SendErrorMessage(source, `You have to be in a nightclub.`);
             } else if (!Player) {
-                return emitNet('chat:addMessage', source, {args: ['^1Error', `Invalid player: ${args.slice(1).join(" ")}`]});
+                return SendErrorMessage(source, `Invalid player: ${args.slice(1).join(" ")}`);
             } else if (GetNightclubPlayerIsIn(Player.id) && GetNightclubPlayerIsIn(Player.id) === InvitersClub.id) {
-                return emitNet('chat:addMessage', source, {args: ['^1Error', `This player is already in your nightclub.`]});
+                return SendErrorMessage(source, `Player is already inside.`);
             } else if (IsPlayerInvitedToNightclub(Player.id, InvitersClub)) {
-                return emitNet('chat:addMessage', source, {args: ['^1Error', `This player has already been invited to this nightclub.`]});
+                return SendErrorMessage(source, `Player has already been invited to this club.`);;
             }
 
             var InviterInfo = GetPlayerFromCache(source);
@@ -837,15 +839,15 @@ function CMD (source, args) {
             if (!args[1]) return emitNet('chat:addMessage', source, {args: ['^1Syntax', `/club accept <Invite ID>. Use /club invites to view all your invites.`]});
             var Invite = GetInviteById(parseInt(args[1]));
             if (!Invite) {
-                return emitNet('chat:addMessage', source, {args: ['^1Error', `Invalid invite ID. Use /club invites to view all your invites.`]});
-            } else if (GetNightclubPlayerIsIn(source)) return emitNet('chat:addMessage', source, {args: ['^1Error', `Leave your current nightclub first.`]});
+                return SendErrorMessage(source, `Invalid invite ID. Use /club invites to your all invites.`);
+            } else if (GetNightclubPlayerIsIn(source)) return SendErrorMessage(source, `Unavailable while inside a nightclub.`);
             
             DeleteInvite(parseInt(args[1]));
             emitNet('Nightclubs:TpToClubInside', source, JSON.stringify(Invite.club));
         break;
         case 'invites':
             var Invites = GetPlayersInvites(source);
-            if (Invites.length < 1) return emitNet('chat:addMessage', source, {args: ['^1Error', `You haven't been invited yet :(`]}); 
+            if (Invites.length < 1) return SendErrorMessage(source, `No invites yet...`);
             var Fields = [{
                 Left_Text: "~HUD_COLOUR_GREY~Club name",
                 Right_Text: "~HUD_COLOUR_GREY~Invite ID"
@@ -858,7 +860,7 @@ function CMD (source, args) {
                 });
             });
 
-            emitNet('Nightclubs:Scoreboard', source, "NIGHTCLUBS", JSON.stringify(Fields));           
+            emitNet('Nightclubs:Scoreboard', source, "NIGHTCLUB INVITES", JSON.stringify(Fields));           
         break;
     }
 }
@@ -867,20 +869,10 @@ RegisterCommand('club', CMD);
 RegisterCommand('clubs', CMD);
 RegisterCommand('nightclub', CMD);
 RegisterCommand('nightclubs', CMD);
-var toggle = false;
-RegisterCommand('lights', (source, args) => {
-    if (toggle) {
-        emitNet('Nightclubs:DistantLights', -1, false);
-        toggle = false;
-    } else {
-        emitNet('Nightclubs:DistantLights', -1, true);
-        toggle = true;
-    }
-});
-/*RegisterCommand('clubseval', (source, args) => {
+RegisterCommand('clubseval', (source, args) => {
     const evaled = eval(args.join(" "));
     console.log(evaled)
-})
+})/*
 RegisterCommand('addfakeplayer', (source, args) => {
     AddPlayerToNightclubSession(parseInt(args[0]), {id: parseInt(args[1])});
 })*/
