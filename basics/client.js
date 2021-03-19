@@ -36,10 +36,14 @@ emit('chat:addSuggestion', '/kick', 'Kick a player', [{name: 'Server ID', help: 
 emit('chat:addSuggestion', '/dm', 'Send a private message to a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Message', help: 'Express yourself!'}])
 emit('chat:addSuggestion', '/vworld', 'Change player virtual world', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Virtual world', help: 'Number of the virtual world'}]);
 emit('chat:addSuggestion', '/warn', 'Warn a player', [{name: 'Server ID', help: 'Player\'s server ID'}, {name: 'Reason', help: 'Note: the player will see the reason!'}])
+emit('chat:addSuggestion', '/basics', 'List of commands', []);
 
 let WAIT = (ms) => new Promise(res => setTimeout(res, ms));
 let ped = PlayerPedId();
 let godmode = !GetPlayerInvincible(PlayerId());
+let help_title = 'Basics';
+let text_a = '~h~List of available commands:';
+let text_b = '~y~/fix~s~ - Fix your current vehicle\n~y~/dv~s~ - Delete your current vehicle\n~y~/godmode~s~ - Enable or disable invincibility\n~y~/v~s~ - Spawn a vehicle by its name\n~y~/tp~s~ - Teleport to another player\n~y~/vcolor~s~ - Paint your current vehicle using RGB values\n~y~/dm~s~ - Send a private message to another player\n~c~* ~s~~y~/get~s~ - Teleport another player to you\n~c~* ~s~~y~/kick~s~ - Kick a player from the server\n~c~* ~s~~y~/vworld~s~ - Change players\' virtual world\n~c~* ~s~~y~/warn~s~ - Warn a player with an alert message on their screen\n~c~Commands prefixed by * are restricted and require specific permissions to be executed~s~'
 
 async function warningsMsg(msg){
     let loop = true
@@ -54,6 +58,113 @@ async function warningsMsg(msg){
         await WAIT(0);
     }
 }
+
+async function helpPopup(header, text1, text2, btntext, enbmouse, textentry, headercomps, text1comps, text2comps) {
+    if (!header) header = 'header';
+    if (!text1) text1 = 'text1';
+    if (!text2) text2 = 'text2';
+    if (!btntext) btntext = 'OK';
+    if (!enbmouse && enbmouse !== false) enbmouse = false;
+    if (!textentry && textentry !== false) textentry = false;
+
+    let loop = true
+    let popupbody = RequestScaleformMovie('POPUP_WARNING'), popupbtn = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS')
+    while (!HasScaleformMovieLoaded(popupbody) || !HasScaleformMovieLoaded(popupbtn)) {
+        await WAIT(100)
+    }
+    
+
+    function body() {
+        BeginScaleformMovieMethod(popupbody, 'SHOW_POPUP_WARNING');
+        ScaleformMovieMethodAddParamFloat(500.0);
+        if(textentry){
+            BeginTextCommandScaleformString(header);
+            AddTextComponentsFromArray(headercomps)
+            EndTextCommandScaleformString();
+            BeginTextCommandScaleformString(text1);
+            AddTextComponentsFromArray(text1comps)
+            EndTextCommandScaleformString();
+            BeginTextCommandScaleformString(text2);
+            AddTextComponentsFromArray(text2comps)
+            EndTextCommandScaleformString();
+        } else {
+            ScaleformMovieMethodAddParamPlayerNameString(header);
+            ScaleformMovieMethodAddParamPlayerNameString(text1);
+            ScaleformMovieMethodAddParamPlayerNameString(text2);
+        }
+        EndScaleformMovieMethod();
+    }
+
+    body();
+
+    function buttons() {
+        BeginScaleformMovieMethod(popupbtn, 'CLEAR_ALL');
+        EndScaleformMovieMethod();
+
+        if(enbmouse) {
+            BeginScaleformMovieMethod(popupbtn, 'TOGGLE_MOUSE_BUTTONS');
+            ScaleformMovieMethodAddParamBool(true);
+            EndScaleformMovieMethod();
+        }
+
+        BeginScaleformMovieMethod(popupbtn, 'SET_DATA_SLOT');
+        ScaleformMovieMethodAddParamInt(0);
+        ScaleformMovieMethodAddParamPlayerNameString('~INPUT_FRONTEND_ACCEPT~');
+        ScaleformMovieMethodAddParamPlayerNameString(btntext);
+        if (enbmouse) {
+            ScaleformMovieMethodAddParamBool(true);
+            ScaleformMovieMethodAddParamInt(201)
+        }
+        EndScaleformMovieMethod();
+
+        BeginScaleformMovieMethod(popupbtn, 'DRAW_INSTRUCTIONAL_BUTTONS')
+        EndScaleformMovieMethod();
+    }
+
+    buttons();
+
+    function stop(){
+        loop = false;
+        SetScaleformMovieAsNoLongerNeeded(popupbody);
+        BeginScaleformMovieMethod(popupbtn, 'CLEAR_ALL');
+        EndScaleformMovieMethod()
+        SetScaleformMovieAsNoLongerNeeded(popupbtn)
+        PlaySoundFrontend(-1, 'SELECT', 'HUD_FRONTEND_MP_SOUNDSET');
+    }
+
+    function disablecontrols() {
+        DisableControlAction(0, 24, true);
+        DisableControlAction(0, 25, true);
+        DisableControlAction(0, 1, true);
+        DisableControlAction(0, 2, true);
+        DisableControlAction(0, 16, true);
+        DisableControlAction(0, 17, true);
+        DisableControlAction(0, 257, true);
+    }
+
+    while (loop) {
+        DrawScaleformMovieFullscreen(popupbody, 255, 255, 255, 255, 0);
+        DrawScaleformMovieFullscreen(popupbtn, 255, 255, 255, 255, 0);
+
+        HideHudAndRadarThisFrame();
+
+        if (enbmouse) {
+            SetMouseCursorActiveThisFrame();
+        }
+
+        DisableControlAction(2, 200);
+        disablecontrols();
+
+        if (IsControlJustReleased(0, 201) || IsControlJustReleased(0, 202) || IsControlJustReleased(0, 238)) {
+            stop();
+        }
+        await WAIT(0);
+    }
+}
+
+onNet('louBasics:helpScaleform', () => {
+    helpPopup(help_title, text_a, text_b, 'OK', true, false, null, null, null);
+})
 
 onNet('louBasics:warningMsg', (msg) => {
     warningsMsg(msg);
@@ -71,28 +182,6 @@ function invincibilityOff(){
     BeginTextCommandThefeedPost('GM_OFF');
     AddTextComponentSubstringPlayerName('GM_OFF');
     EndTextCommandThefeedPostTicker(true, false);
-}
-
-function vehInvincibilityOn(){
-    if(!IsPedInAnyVehicle(PlayerPedId())){
-        noVehicle();
-    } else {
-        SetEntityInvincible(GetVehiclePedIsIn(PlayerPedId()), true)
-        BeginTextCommandThefeedPost('VGM_ON');
-        AddTextComponentSubstringPlayerName('VGM_ON');
-        EndTextCommandThefeedPostTicker(true, false);
-    }   
-}
-
-function vehInvincibilityOff(){
-    if(!IsPedInAnyVehicle(PlayerPedId())){
-        noVehicle();
-    } else {
-        SetEntityInvincible(GetVehiclePedIsIn(PlayerPedId()), false)
-        BeginTextCommandThefeedPost('VGM_OFF');
-        AddTextComponentSubstringPlayerName('VGM_OFF');
-        EndTextCommandThefeedPostTicker(true, false);
-    }   
 }
 
 function warnNoArgs(){
@@ -383,4 +472,4 @@ RegisterCommand('godmode', (source) => {
         SetPlayerInvincible(PlayerId(), true);
         invincibilityOn();
     }
-})
+});
