@@ -3,7 +3,7 @@ SetDiscordRichPresenceAsset('cat');
 SetDiscordRichPresenceAssetText('lou made this owo');
 SetDiscordRichPresenceAssetSmall('logo');
 SetDiscordRichPresenceAssetSmallText('yes fivem logo go woah');
-SetDiscordRichPresenceAction(0, 'cat', 'https://genrandom.com/cats/')
+SetDiscordRichPresenceAction(0, 'join whore club', 'fivem://connect/w8embb')
 
 function discordPresence(){
     const playerName = GetPlayerName(PlayerId());
