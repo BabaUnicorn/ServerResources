@@ -455,7 +455,9 @@ function RequestNightClubsFromServer() {
                 FreezeEntityPosition(PedId, true);
                 SetEntityHeading(PedId, EntryMethod2 === 'door' ? 0 : 270);
                 SetGameplayCamRelativeHeading(0);
-                SetEntityCoords(PedId, Coords[0], Coords[1], Coords[2]);
+                var Y = Coords[1];
+                if (EntryMethod2 === 'door') Y += 3;
+                SetEntityCoords(PedId, Coords[0], Y, Coords[2]);
                 PlayerPedCoords = Coords;
                 DebugLog(`Set player coords to ${PlayerPedCoords.join(', ')}`);
 
@@ -552,7 +554,8 @@ function RequestNightClubsFromServer() {
         EnteringClub = Club;
         InsideClub = null;
 
-        StartupLoadingScreen();
+        // BigfeedEnabled, BigfeedTitle, BigfeedSubtitle, BigfeedBody, BigfeedTxd, BigfeedTxn
+        StartupLoadingScreen(true, "NIGHTCLUBS", Club.name, Club.description, 'foreclosures_club', 'lighting4');
         while (!IsLoadingScreenActive()) {
             await Wait(1);
         }
@@ -582,13 +585,15 @@ function RequestNightClubsFromServer() {
 		});
 
         var StartedWaiting = GetGameTimer();
+        var DisplayWarningMessage = true;
         while (!InsideClub && EnteringClub) {
             var CurrentTime = GetGameTimer();
 
             SetMouseCursorActiveThisFrame();
 
-            if ((CurrentTime - StartedWaiting) >= 10000) {
-                SetWarningMessageWithHeader("HUD_ALERT", "NightclubsServerTakingTooLongWarningMessageBody", 134217748, false, false, false, false);
+            if (((CurrentTime - StartedWaiting) >= 10000)) {
+                if (DisplayWarningMessage) SetWarningMessageWithHeader("HUD_ALERT", "NightclubsServerTakingTooLongWarningMessageBody", 134217748, false, false, false, false);
+                
                 if (IsControlJustReleased(2, 201)) {
                     DoScreenFadeOut();
 
@@ -600,6 +605,8 @@ function RequestNightClubsFromServer() {
                     }, 3000);
                 } else if (IsControlJustReleased(2, 202)) {
                     NetworkOnResponse('timeout');
+                } else if (IsControlJustReleased(2, 203)) {
+                    DisplayWarningMessage = (DisplayWarningMessage ? false : true);
                 }
             }
 
@@ -790,15 +797,34 @@ function RequestNightClubsFromServer() {
     });
 
     onNet('Nightclubs:HidePlayer', async (playerServerId) => {
-        await Wait(1500);
-        
-        var PlayerLocalId = GetPlayerFromServerId(playerServerId);
+        //await Wait(1500);
+        var ticks = 0;
+        while (GetPlayerFromServerId(playerServerId) === -1) {
+            ticks += 1;
+            DebugLog(`Waiting.. ${ticks}`);
+            if (ticks >= 5) {
+                DebugLog(`^1Nightclubs:HidePlayer: Player didn't load in time...`);
+                break;
+            }
+            await Wait(100);
+        }
+        var LocalId = GetPlayerFromServerId(playerServerId);
+        var MyId = PlayerId();
 
-        if (PlayerLocalId !== PlayerId()) HidePlayer(PlayerLocalId);
+        DebugLog(`Nightclubs:HidePlayer: Player id has loaded locally! Id: ${LocalId} our Id: ${MyId}`);
 
-        DebugLog("Hid player (Nightclubs:HidePlayer)")
-        DebugLog(playerServerId)
-        DebugLog(PlayerLocalId)
+        if (LocalId !== PlayerId()) {
+            HidePlayer(PlayerLocalId);
+            DebugLog("Nightclubs:HidePlayer: Hid player");
+            DebugLog(`Player's server ID: ${playerServerId}`);
+            DebugLog(`Player's local ID: ${LocalId}`);
+            DebugLog(`Our ID: ${MyId}`);
+        } else {
+            DebugLog(`^1Nightclubs:HidePlayer: Player's local id is the same as our id. Player won't be hidden...`);
+            DebugLog(`Player's server ID: ${playerServerId}`);
+            DebugLog(`Player's local ID: ${LocalId}`);
+            DebugLog(`Our ID: ${MyId}`);
+        }
     });
 
     onNet("Nightclubs:Tp", async Club => {
