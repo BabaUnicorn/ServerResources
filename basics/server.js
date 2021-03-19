@@ -120,7 +120,7 @@ RegisterCommand('vworld', (source, args) => {
         SetPlayerRoutingBucket(idResult, targetWorld);
         emitNet('louBasics:vworldNotif', idResult, targetWorld);
     }
-})
+}, true)
 
 RegisterCommand('warn', async (source, args) => {
     const GetPlayers = () => {
@@ -144,5 +144,5 @@ RegisterCommand('warn', async (source, args) => {
 }, true)
 
 RegisterCommand('basics', (source) => {
-    console.log('help and cmds section is WIP :3')
+    emitNet('louBasics:helpScaleform', source);
 });
