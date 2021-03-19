@@ -9,11 +9,6 @@ var NightClubs = [
         name: "Elysian Island",
         blipTextLabel: "NightclubsBlipName_1",
         description: "Forget homely blue-collar neighborhoods and picturesque abandoned factories. If you want a real challenge, try gentrifying a dockside slum that's knee-deep in industrial discharge and dead fish. If you can bring the A-listers here, you can bring them anywhere.",
-        image: {
-            url: 'https://i.imgur.com/Rr3Zfny.png',
-            size: [1024, 702], // width n height
-            txn: "elysian_island"
-        },
         blipColor: null,
         blipSprite: null,
         markerColor: null,
@@ -437,6 +432,35 @@ function DebugLog(text, bypass) {
     }
 }
 
+function TimeSince(date) {
+
+    var seconds = Math.floor((new Date() - date) / 1000);
+  
+    var interval = seconds / 31536000;
+  
+    if (interval > 1) {
+      return Math.floor(interval) + " y";
+    }
+    interval = seconds / 2592000;
+    if (interval > 1) {
+      return Math.floor(interval) + " mo";
+    }
+    interval = seconds / 86400;
+    if (interval > 1) {
+      return Math.floor(interval) + " d";
+    }
+    interval = seconds / 3600;
+    if (interval > 1) {
+      return Math.floor(interval) + " h";
+    }
+    interval = seconds / 60;
+    if (interval > 1) {
+      return Math.floor(interval) + " ms";
+    }
+
+    return Math.floor(seconds) + " s";
+  }
+
 function GetPlayerFullName(id) {
     return `[${id}] ${GetPlayerName(id)}`
 }
@@ -507,9 +531,12 @@ function CreateInvite(from, to, club) {
     InviteIds += 1;
     PlayerInvites.push({
         from: from,
+        from_Name: GetPlayerName(from),
         to: to,
+        to_Name: GetPlayerName(to),
         club: club,
-        inviteId: InviteIds
+        inviteId: InviteIds,
+        invitedTimestamp: Date.now()
     });
     
     return InviteIds;
@@ -840,27 +867,51 @@ function CMD (source, args) {
             var Invite = GetInviteById(parseInt(args[1]));
             if (!Invite) {
                 return SendErrorMessage(source, `Invalid invite ID. Use /club invites to your all invites.`);
-            } else if (GetNightclubPlayerIsIn(source)) return SendErrorMessage(source, `Unavailable while inside a nightclub.`);
-            
-            DeleteInvite(parseInt(args[1]));
+            } else if (GetNightclubPlayerIsIn(source)) {
+                return SendErrorMessage(source, `Unavailable while inside a nightclub.`);
+            } else if ((Date.now() - Invite.invitedTimestamp) >= 600000) {
+                DeleteInvite(Invite.inviteId);
+                return SendErrorMessage(source, `This invite is expired.`);
+            }
+
+            DeleteInvite(Invite.inviteId);
             emitNet('Nightclubs:TpToClubInside', source, JSON.stringify(Invite.club));
         break;
         case 'invites':
             var Invites = GetPlayersInvites(source);
             if (Invites.length < 1) return SendErrorMessage(source, `No invites yet...`);
-            var Fields = [{
-                Left_Text: "~HUD_COLOUR_GREY~Club name",
-                Right_Text: "~HUD_COLOUR_GREY~Invite ID"
-            }];
+            var Fields = [];
             Invites.forEach(inv => {
                 Fields.push({
-                    Left_Text: inv.club.name,
-                    Right_Text: "~l~" + inv.inviteId,
-                    Right_Text_Background_Banner: 3
+                    type: 0,
+                    text1: '~h~'+ inv.inviteId,
+                    text2: '',
+                    text3: '',
+                    text4: inv.from_Name,
+                    text5: '', //
+                    text6: inv.club.name,
+                    text7: '',
+                    text8: String(((Date.now() - inv.invitedTimestamp) / 60000).toFixed()) + '/10 minutes',
+                    text9: '',
+                    text10: ''
                 });
             });
+            Fields.push({
+                type: 7,
+                text1: "TIP:",
+                text2: 'Use /club accept [invite id] to accept an invite.',
+                text3: '',
+                text4: '',
+                text5: '', //
+                text6: '',
+                text7: '',
+                text8: '',
+                text9: '',
+                text10: ''
+            });
+            var Titles = ['Invite ID', 'Invited by', '', 'Club name', '', 'Expires in', '', ''];
 
-            emitNet('Nightclubs:Scoreboard', source, "NIGHTCLUB INVITES", JSON.stringify(Fields));           
+            emitNet('Nightclubs:Scoreboard_2', source, "NIGHTCLUB INVITES", Titles, Fields);           
         break;
     }
 }
@@ -869,10 +920,10 @@ RegisterCommand('club', CMD);
 RegisterCommand('clubs', CMD);
 RegisterCommand('nightclub', CMD);
 RegisterCommand('nightclubs', CMD);
-RegisterCommand('clubseval', (source, args) => {
+/*RegisterCommand('clubseval', (source, args) => {
     const evaled = eval(args.join(" "));
     console.log(evaled)
-})/*
+})
 RegisterCommand('addfakeplayer', (source, args) => {
     AddPlayerToNightclubSession(parseInt(args[0]), {id: parseInt(args[1])});
 })*/
