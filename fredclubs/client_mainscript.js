@@ -994,3 +994,8 @@ RegisterCommand('clubsdebug', () => {
 /*RegisterCommand('clubsevalc', (source, args) => {
     console.log(eval(args.join(" ")))
 })*/
+
+emit('chat:addSuggestion', '/club', 'Nightclub commands', [
+    {name: "list", help: "View all nightclubs that are available"},
+    {name: "tp", help: "View all nightclubs that are available"},
+])
