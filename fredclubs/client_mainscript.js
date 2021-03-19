@@ -801,8 +801,8 @@ function RequestNightClubsFromServer() {
         var ticks = 0;
         while (GetPlayerFromServerId(playerServerId) === -1) {
             ticks += 1;
-            DebugLog(`Waiting.. ${ticks}`);
-            if (ticks >= 5) {
+            DebugLog(`Waiting... ${ticks}`);
+            if (ticks >= 30) {
                 DebugLog(`^1Nightclubs:HidePlayer: Player didn't load in time...`);
                 break;
             }
@@ -814,7 +814,7 @@ function RequestNightClubsFromServer() {
         DebugLog(`Nightclubs:HidePlayer: Player id has loaded locally! Id: ${LocalId} our Id: ${MyId}`);
 
         if (LocalId !== PlayerId()) {
-            HidePlayer(PlayerLocalId);
+            HidePlayer(LocalId);
             DebugLog("Nightclubs:HidePlayer: Hid player");
             DebugLog(`Player's server ID: ${playerServerId}`);
             DebugLog(`Player's local ID: ${LocalId}`);
