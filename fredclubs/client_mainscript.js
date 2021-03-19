@@ -996,6 +996,5 @@ RegisterCommand('clubsdebug', () => {
 })*/
 
 emit('chat:addSuggestion', '/club', 'Nightclub commands', [
-    {name: "list", help: "View all nightclubs that are available"},
-    {name: "tp", help: "View all nightclubs that are available"},
+    {name: "list/tp [club name]/toggle/exit/info/invites/invite [player name]/accept [invite id]"}
 ])
