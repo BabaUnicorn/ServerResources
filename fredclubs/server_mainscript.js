@@ -784,7 +784,7 @@ on('playerDropped', reason => {
 function CMD (source, args) {
     if (args.length < 1) return emitNet("chat:addMessage", source, {
         args: [
-            "^1Error", "Not enough arguments"
+            "^1Error", "Not enough arguments. Try /clubs help"
         ]
     });
 
@@ -913,6 +913,9 @@ function CMD (source, args) {
 
             emitNet('Nightclubs:Scoreboard_2', source, "NIGHTCLUB INVITES", Titles, Fields);           
         break;
+        default:
+            return SendErrorMessage(source, 'Invalid arguments. Try looking at /clubs help');
+        break;
     }
 }
 
@@ -923,7 +926,7 @@ RegisterCommand('nightclubs', CMD);
 /*RegisterCommand('clubseval', (source, args) => {
     const evaled = eval(args.join(" "));
     console.log(evaled)
-})
+});
 RegisterCommand('addfakeplayer', (source, args) => {
     AddPlayerToNightclubSession(parseInt(args[0]), {id: parseInt(args[1])});
-})*/
+});*/
