@@ -405,10 +405,8 @@ async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfi
 		await Wait(30);
 	}
 
-	BeginScaleformMovieMethod(BigFeed, "HIDE_ONLINE_LOGO");
-	EndScaleformMovieMethod();
-
 	BeginScaleformMovieMethod(BigFeed, "SETUP_BIGFEED");
+	ScaleformMovieMethodAddParamBool(false);
 	EndScaleformMovieMethod();
 
 	BeginScaleformMovieMethod(BigFeed, "SET_BIGFEED_INFO");
@@ -438,6 +436,9 @@ async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfi
 	} else {
 		ScaleformMovieMethodAddParamPlayerNameString(Title);
 	}	
+	EndScaleformMovieMethod();
+
+	BeginScaleformMovieMethod(BigFeed, "HIDE_ONLINE_LOGO");
 	EndScaleformMovieMethod();
 
 	BeginScaleformMovieMethod(BigFeed, "FADE_IN_BIGFEED");
@@ -512,6 +513,152 @@ async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfi
 	}
 }
 
+async function Scoreboard_2(Header, Titles, Slots, WaitBeforeAllowingConfirm, Buttons, EnableMouse) {
+	if (!Header) Header = "Scoreboard";
+	if (!Titles) Titles = ['title1', 'title2', 'title3', 'title4', 'title5', 'title6', 'title7', 'title8'];
+	if (!Slots) Slots = [
+		{
+			type: 1,
+			text1: 'slot1',
+			text2: 'slot2',
+			text3: 'slot3',
+			text4: 'slot4',
+			text5: 'slot5',
+			text6: 'slot6',
+			text7: 'slot7',
+			text8: 'slot8',
+			text9: 'slot9',
+			text10: 'slot10'
+		},
+		{
+			type: 0,
+			text1: '4',
+			text2: 'iii',
+			text3: '{*%NE',
+			text4: 'slot4',
+			text5: 'slot5',
+			text6: 'slot6',
+			text7: 'slot7',
+			text8: 'slot8',
+			text9: 'slot9',
+			text10: 'slot10'
+		},
+		{
+			type: 10,
+			text1: '4',
+			text2: 'iii',
+			text3: '{*%NE',
+			text4: 'slot4',
+			text5: 'slot5',
+			text6: 'slot6',
+			text7: 'slot7',
+			text8: 'slot8',
+			text9: 'slot9',
+			text10: 'slot10'
+		}
+	];
+	if (!Buttons) Buttons = [
+		{
+			button: "~INPUT_FRONTEND_ACCEPT~",
+			text: "OK"
+		},
+		{
+			button: "~INPUT_FRONTEND_CANCEL~",
+			text: "Back"
+		}
+	];
+
+	var Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
+	var Scaleform = RequestScaleformMovie('SC_LEADERBOARD');
+	while (!HasScaleformMovieLoaded(Button) || !HasScaleformMovieLoaded(Scaleform)) {
+		await Wait();
+	}
+	(function SetupButton () {
+		BeginScaleformMovieMethod(Button, "CLEAR_ALL");
+		EndScaleformMovieMethod();
+ 
+		var ButtonIndex = -1;
+		Buttons.forEach(async button => {
+			ButtonIndex += 1;
+			BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
+			ScaleformMovieMethodAddParamInt(ButtonIndex); // Position
+			ScaleformMovieMethodAddParamPlayerNameString(button.button);
+			ScaleformMovieMethodAddParamPlayerNameString(button.text);
+			EndScaleformMovieMethod();
+
+			await Wait(0);
+		});
+ 
+		BeginScaleformMovieMethod(Button, "DRAW_INSTRUCTIONAL_BUTTONS");
+		EndScaleformMovieMethod();
+	})();
+ 
+	BeginScaleformMovieMethod(Scaleform, "SET_DISPLAY_TYPE");
+	EndScaleformMovieMethod();	
+ 
+	BeginScaleformMovieMethod(Scaleform, "SET_MULTIPLAYER_TITLE");
+	ScaleformMovieMethodAddParamPlayerNameString(Header)
+	EndScaleformMovieMethod();
+ 
+	BeginScaleformMovieMethod(Scaleform, "SET_TITLE");
+	Titles.forEach(async title => {
+		ScaleformMovieMethodAddParamPlayerNameString(title);
+		await Wait(0);
+	});
+	EndScaleformMovieMethod();
+ 
+	var Index = -1;
+	Slots.forEach(async slot => {
+		Index += 1;
+		
+		BeginScaleformMovieMethod(Scaleform, "SET_SLOT");
+		ScaleformMovieMethodAddParamInt(Index);
+		ScaleformMovieMethodAddParamInt(slot.type || 0);
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text1 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text2 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text3 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text4 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text5 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text6 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text7 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text8 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text9 || "");
+		ScaleformMovieMethodAddParamPlayerNameString(slot.text10 || "");
+		EndScaleformMovieMethod();
+
+		await Wait(0);
+	});
+ 
+	var KeepDisplaying = true;
+ 
+	while (KeepDisplaying) {
+		DrawScaleformMovieFullscreen(Button, 255, 255, 255, 255, 0);
+		DrawScaleformMovieFullscreen(Scaleform, 255, 255, 255, 255, 0);
+ 
+		DisableControlAction(2, 200);
+ 
+		SetMouseCursorActiveThisFrame();
+		DisableControlAction(0, 24, true); // attack
+		DisableControlAction(0, 25, true); // aim
+		DisableControlAction(0, 1, true); //camera movement left right
+		DisableControlAction(0, 2, true); // camer movement left right
+		DisableControlAction(0, 16, true); 
+		DisableControlAction(0, 17, true);
+		DisableControlAction(0, 257, true);
+ 
+		if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 202) || IsControlJustReleased(0, 238) || IsControlJustReleased(0, 237)) {
+			KeepDisplaying = false;
+			BeginScaleformMovieMethod(Button, "CLEAR_ALL");
+			EndScaleformMovieMethod();
+			SetScaleformMovieAsNoLongerNeeded(Button);
+			SetScaleformMovieAsNoLongerNeeded(Scaleform);
+			PlaySoundFrontend(-1, 'BACK', 'HUD_FRONTEND_DEFAULT_SOUNDSET')
+		}
+ 
+		await Wait();
+	}
+}
+
 async function WarningMessage(HeaderTextLabel, BodyTextLabel, Background) {
 	if (!BodyTextLabel) BodyTextLabel = 'NightclubsServerTakingTooLongWarningMessageBody';
 	DebugLog(`HeaderTextLabel=${HeaderTextLabel}`);
@@ -571,10 +718,21 @@ async function InviteNotification(PlayerInfo, ClubInfo, InviteId) {
 
 onNet('Nightclubs:Bigfeed', Bigfeed);
 onNet("Nightclubs:Scoreboard", Scoreboard);
+onNet("Nightclubs:Scoreboard_2", Scoreboard_2);
 onNet("Nightclubs:WarningMessage", WarningMessage);
 onNet("Nightclubs:InviteNotification", InviteNotification);
+on('onResourceStop', (resouce) => {
+	if (resource === GetCurrentResourceName()) {
+		SetScaleformMovieAsNoLongerNeeded(LoadingScreenBigfeed);
+	}
+});
 
-RegisterCommand('nightclubs::bigfeeddebug', () => Bigfeed());
+RegisterCommand('nightclubs::bigfeeddebug', () => {
+	Bigfeed(`Title`, `Subtitle`, `Body`, 'sc_leaderboard', 'sc_logo', 5000, 'OKOKOK', true, false, null, null, null);
+});
+RegisterCommand('nightclubs::scoreboard_2', () => {
+	Scoreboard_2();
+})
 RegisterCommand('nightclubs::scoreboarddebug', () => Scoreboard());
 RegisterCommand('nightclubs::warningmessagedebug', () => WarningMessage());
 
@@ -588,24 +746,18 @@ RegisterCommand('menutest', async () => {
 		BeginScaleformMovieMethod(Button, "CLEAR_ALL");
 		EndScaleformMovieMethod();
  
-		BeginScaleformMovieMethod(Button, "TOGGLE_MOUSE_BUTTONS");
-		ScaleformMovieMethodAddParamBool(true);
-		EndScaleformMovieMethod();
+
  
 		BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
 		ScaleformMovieMethodAddParamInt(0); // Position
 		ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_ACCEPT~");
 		ScaleformMovieMethodAddParamPlayerNameString("Select");
-		ScaleformMovieMethodAddParamBool(true);
-		ScaleformMovieMethodAddParamInt(201); // what control will be pressed when you click the button
 		EndScaleformMovieMethod();
  
 		BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
 		ScaleformMovieMethodAddParamInt(1); // Position
 		ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_CANCEL~");
 		ScaleformMovieMethodAddParamPlayerNameString("Back");
-		ScaleformMovieMethodAddParamBool(true);
-		ScaleformMovieMethodAddParamInt(202); // what control will be pressed when you click the button
 		EndScaleformMovieMethod();
  
 		BeginScaleformMovieMethod(Button, "DRAW_INSTRUCTIONAL_BUTTONS");
@@ -714,32 +866,8 @@ RegisterCommand('menutest', async () => {
 			SetScaleformMovieAsNoLongerNeeded(Scaleform);
 		}
  
+		DrawScaleformMovieFullscreen(BigFeed, 255, 255, 255, 255, 0);
+
 		await Wait(0);
 	}
 });
-
-RegisterCommand('sprite', async (source, args) => {
-	if (args.length < 2) return DebugLog(`sprite txd txn`, true);
-	RequestStreamedTextureDict(args[0]);
-	var ticks = 0;
-	while (!HasStreamedTextureDictLoaded(args[0])) {
-		ticks += 0;
-		if (ticks >= 150) {
-			DebugLog(`Texture dict ${args[0]} didnt load in time...`);
-			return false;
-		}
-		await Wait(0);
-	}
-
-	var KeepLoop = true;
-	while (KeepLoop) {
-		DrawSprite(args[0], args[1], 0.5, 0.5, 50, 50, 255, 255, 255, 255);
-
-		if (IsControlJustPressed(0, 201)) {
-			KeepLoop = false;
-			SetStreamedTextureDictAsNoLongerNeeded(args[0]);
-		}
-
-		await Wait(0);
-	}
-})
