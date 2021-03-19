@@ -995,6 +995,10 @@ RegisterCommand('clubsdebug', () => {
     console.log(eval(args.join(" ")))
 })*/
 
-emit('chat:addSuggestion', '/club', 'Nightclub commands', [
-    {name: "list/tp [club name]/toggle/exit/info/invites/invite [player name]/accept [invite id]"}
-])
+var CommandAliases = ['club', 'clubs', 'nightclub', 'nightclubs'];
+CommandAliases.forEach(async alias => {
+    emit('chat:addSuggestion', '/' + alias, 'Nightclub commands', [
+        {name: "list/tp [club name]/toggle/exit/info/invites/invite [player name]/accept [invite id]"}
+    ]);
+    await Wait(500);
+});
