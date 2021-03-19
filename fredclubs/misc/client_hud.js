@@ -721,7 +721,7 @@ onNet("Nightclubs:Scoreboard", Scoreboard);
 onNet("Nightclubs:Scoreboard_2", Scoreboard_2);
 onNet("Nightclubs:WarningMessage", WarningMessage);
 onNet("Nightclubs:InviteNotification", InviteNotification);
-on('onResourceStop', (resouce) => {
+on('onResourceStop', (resource) => {
 	if (resource === GetCurrentResourceName()) {
 		SetScaleformMovieAsNoLongerNeeded(LoadingScreenBigfeed);
 	}
