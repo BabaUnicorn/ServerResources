@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    
+<CVehicleModelInfoVarGlobal>    
+  <Wheels>
+    <Item> <!-- VWT_SPORT -->
+	  <Item>
+        <wheelName>wheel_vspt_te377</wheelName>
+        <wheelVariation />
+        <modShopLabel>te377</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			 <Item>
+        <wheelName>wheel_vspt_blitzz</wheelName>
+        <wheelVariation />
+        <modShopLabel>blitzz</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_rgII</wheelName>
+        <wheelVariation />
+        <modShopLabel>rgII</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_avs5</wheelName>
+        <wheelVariation />
+        <modShopLabel>avs5</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_cr2p</wheelName>
+        <wheelVariation />
+        <modShopLabel>cr2p</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_meister</wheelName>
+        <wheelVariation />
+        <modShopLabel>meister</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_vsxxx</wheelName>
+        <wheelVariation />
+        <modShopLabel>vsxxx</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_emitz</wheelName>
+        <wheelVariation />
+        <modShopLabel>emitz</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_mbbattle</wheelName>
+        <wheelVariation />
+        <modShopLabel>mbbattle</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_bbslm</wheelName>
+        <wheelVariation />
+        <modShopLabel>bbslm</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_bbsrs</wheelName>
+        <wheelVariation />
+        <modShopLabel>bbsrs</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_bbsch</wheelName>
+        <wheelVariation />
+        <modShopLabel>bbsch</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_leon</wheelName>
+        <wheelVariation />
+        <modShopLabel>leon</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_minerva</wheelName>
+        <wheelVariation />
+        <modShopLabel>minerva</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+			<Item>
+        <wheelName>wheel_vspt_lxz</wheelName>
+        <wheelVariation />
+        <modShopLabel>lxz</modShopLabel>
+        <rimRadius value="0.348500"/>
+        <rear value="false"/>
+      </Item>
+  </Item>
+    <Item/> <!-- VWT_SUPERMOD1 -->
+    <Item/> <!-- VWT_SUPERMOD2 -->
+    <Item/>
+  </Wheels>
+</CVehicleModelInfoVarGlobal>
