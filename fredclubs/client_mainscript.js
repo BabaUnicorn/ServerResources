@@ -881,7 +881,7 @@ function UpdateReceivedNightclubs() {
 
     onNet("Nightclubs:TpToClubInside", async clubInfo => {
         clubInfo = JSON.parse(clubInfo);
-        if (EnteringClub || ExitingClub || InsideClub) {
+        if (EnteringClub || ExitingClub || InsideClub || !ClubsEnabled) {
             BeginTextCommandThefeedPost("NightclubsErrorUnavailable");
             return EndTextCommandThefeedPostTicker(true, true);
         }
