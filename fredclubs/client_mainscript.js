@@ -27,6 +27,7 @@ var LastGarageCheckpoint = null;
 var ExitCheckpoint = null;
 var GarageExitCheckpoint = null;
 var MinimapPositionLocked = false;
+var InteriorHasPrepared = false;
 var ClubsLastReceived = 0;
 var ClubInteriorId = 271617;
 var LastEnteredAt = 0;
@@ -36,7 +37,6 @@ var IplUnloadedOnStartup = [];
 var ActiveInteriorEntitySets = [];
 var ConcealedPlayers = [];
 var Cooldowns = new Map();
-var InteriorHasPrepared = false;
 var InteriorGarageExitCoords = [-1642.57070078125, -2989.76953125, -76.9454879607422];
 var InteriorExitCoords = [-1569.38525390, -3016.544921875, -74.40615844];
 var NightClubs = [];
@@ -110,7 +110,7 @@ function UpdateReceivedNightclubs() {
         return (Cooldowns.has(code) ? true : false);
     }
 
-    function LoadClubIplsOnStartup () {
+    function LoadClubIplsOnStartup() {
         NightClubs.filter(nc => nc.IplLoadOnStartup).forEach(async nc => {
             DebugLog(`LoadClubIplsOnStartup: Loading IPLs for ${nc.name}`);
             if (nc.IplLoadOnStartup.length && nc.IplLoadOnStartup.length > 0) {
@@ -172,7 +172,7 @@ function UpdateReceivedNightclubs() {
         return NightClubs.find(n => n.id === id);
     } 
 
-    function Get3dDistance (x1, y1, z1, x2, y2, z2) {
+    function Get3dDistance(x1, y1, z1, x2, y2, z2) {
         /*console.log (`${x1} ${y1} ${z1}`)
         console.log (`${x2} ${y2} ${z2}`)*/
 		var resX = x1 - x2;
@@ -182,7 +182,7 @@ function UpdateReceivedNightclubs() {
 		return Math.sqrt((resX * resX) + (resY * resY) + (resZ * resZ));   
     }
 
-	function IsEntityNearNightclub (EntityID, ClubID, EntityCoords) {
+	function IsEntityNearNightclub(EntityID, ClubID, EntityCoords) {
 		var PedCoords2 = (EntityCoords ? EntityCoords : GetEntityCoords(EntityID));
 		var Club = GetNightclubById(ClubID);
 		if (!Club) return null;
@@ -192,7 +192,7 @@ function UpdateReceivedNightclubs() {
 		return (distance < Club.nearbyZone ? true : false);
 	}
 
-    function HidePlayer (PlayerID) {
+    function HidePlayer(PlayerID) {
         if (PlayerID !== -1) {
             DebugLog(`HidePlayer: Hiding player ${PlayerID}`);
             ConcealedPlayers.push(PlayerID);
@@ -420,7 +420,7 @@ function UpdateReceivedNightclubs() {
         DebugLog(`RestartInterior: Refreshed interior ${ClubInteriorId}`);
     }
 
-    async function NetworkOnResponse (response, extra, extra2, extra3) {
+    async function NetworkOnResponse(response, extra, extra2, extra3) {
         if (!response || InsideClub || !EnteringClub) return null;
 
         switch (response.toLowerCase()) {
@@ -846,7 +846,7 @@ function UpdateReceivedNightclubs() {
 
         DebugLog(`Nightclubs:HidePlayer: Player id has loaded locally! Id: ${LocalId} our Id: ${MyId}`);
 
-        if (LocalId !== PlayerId()) {
+        if (LocalId !== MyId) {
             HidePlayer(LocalId);
             DebugLog("Nightclubs:HidePlayer: Hid player");
             DebugLog(`Player's server ID: ${playerServerId}`);
