@@ -14,7 +14,7 @@ var NightClubs = [
         markerColor: null,
         enterZone: 1,
         nearbyZone: 50, 
-        djLightsStyle: 16, // 1-16
+        djLightsStyle: 2, // 1-16
         interiorStyle: 1, // 1-4
         djStyle: 4, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
@@ -28,7 +28,9 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_clubname_01',
+            'light_rigs_off'
         ],
         IplLoadOnStartup: [
             'ba_barriers_case7', 
@@ -56,7 +58,7 @@ var NightClubs = [
         djStyle: 2, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
             'Int01_ba_trophy11',
-            'Int01_ba_trad_lights',
+            //'Int01_ba_trad_lights',
             'Int01_ba_booze_03',
             'Int01_ba_bar_content',
             'Int01_ba_Screen',
@@ -65,7 +67,8 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_clubname_02'
         ],
         IplLoadOnStartup: [
             'ba_barriers_case6',
@@ -88,12 +91,12 @@ var NightClubs = [
         markerColor: null,
         enterZone: 1,
         nearbyZone: 50, 
-        djLightsStyle: 15, // 1-16
-        interiorStyle: 1, // 1-4
+        djLightsStyle: 10, // 1-16
+        interiorStyle: 2, // 1-4
         djStyle: 3, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
             'Int01_ba_trophy11',
-            'Int01_ba_trad_lights',
+            //'Int01_ba_trad_lights',
             'Int01_ba_booze_03',
             'Int01_ba_bar_content',
             'Int01_ba_Screen',
@@ -102,7 +105,9 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_clubname_03',
+            'DJ_03_Lights_04'
         ],
         IplLoadOnStartup: [
             'ba_case9_taleofus',
@@ -134,7 +139,7 @@ var NightClubs = [
         djStyle: 3, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
             'Int01_ba_trophy11',
-            'Int01_ba_trad_lights',
+            //'Int01_ba_trad_lights',
             'Int01_ba_booze_03',
             'Int01_ba_bar_content',
             'Int01_ba_Screen',
@@ -143,7 +148,9 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_clubname_04',
+            'DJ_03_Lights_04'
         ],
         IplLoadOnStartup: [
             'ba_barriers_case4',
@@ -180,7 +187,9 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'DJ_03_Lights_04',
+            'Int01_ba_clubname_05'
         ],
         IplLoadOnStartup: [
             'ba_barriers_case1',
@@ -206,7 +215,7 @@ var NightClubs = [
         enterZone: 0.48,
         nearbyZone: 50, 
         djLightsStyle: 9, // 1-16
-        interiorStyle: 2, // 1-4
+        interiorStyle: 1, // 1-4
         djStyle: 1, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
             'Int01_ba_trophy11',
@@ -219,6 +228,7 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
+            'Int01_ba_clubname_06',
             'Int01_ba_lightgrid_01'
         ],
         IplLoadOnStartup: [
@@ -256,7 +266,9 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_clubname_07',
+            'DJ_04_Lights_04'
         ],
         IplLoadOnStartup: [
             'ba_case2_taleofus',
@@ -281,7 +293,7 @@ var NightClubs = [
         markerColor: null,
         enterZone: 1.5,
         nearbyZone: 50, 
-        djLightsStyle: 16, // 1-16
+        djLightsStyle: 1, // 1-16
         interiorStyle: 3, // 1-4
         djStyle: 3, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
@@ -294,7 +306,9 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_clubname_08',
+            'DJ_04_Lights_04'
         ],
         IplLoadOnStartup: [
             'ba_case5_solomun',
@@ -317,7 +331,7 @@ var NightClubs = [
         markerColor: null,
         enterZone: 1,
         nearbyZone: 70, 
-        djLightsStyle: 15, // 1-16
+        djLightsStyle: 2, // 1-16
         interiorStyle: 3, // 1-4
         djStyle: 2, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
@@ -330,7 +344,9 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'Int01_ba_clubname_09',
+            'DJ_01_Lights_04'
         ],
         IplLoadOnStartup: [
             'ba_barriers_case8',
@@ -362,7 +378,7 @@ var NightClubs = [
         markerColor: null,
         enterZone: 1,
         nearbyZone: 50, 
-        djLightsStyle: 14, // 1-16
+        djLightsStyle: 1, // 1-16
         interiorStyle: 3, // 1-4
         djStyle: 4, //1-4, which dj posters should be on the walls
         miscProps: [ // https://web.archive.org/web/20191207165505/https://wiki.rage.mp/index.php?title=Interior_Props
@@ -376,14 +392,17 @@ var NightClubs = [
             'Int01_ba_dry_ice',
             'Int01_ba_equipment_setup',
             'Int01_ba_security_upgrade',
-            'Int01_ba_lightgrid_01'
+            'Int01_ba_lightgrid_01',
+            'DJ_04_Lights_04',
+            'DJ_02_Lights_01',
+            'Int01_ba_clubname_07'
         ],
         IplLoadOnStartup: [
             'ba_barriers_case3',
             'ba_case3_madonna'
         ],
         IplUnloadOnStartup: null
-    },
+    }/*,
     {
         id: 11,
         coords: [15.34983052, 6436.1967773437, 31.425300598144],
@@ -403,7 +422,7 @@ var NightClubs = [
         interiorStyle: 4, // 1-4
         djStyle: null, //1-4, which dj posters should be on the walls
         miscProps: null
-    }
+    }*/
 ];
 var DebugLogsEnabled = true;
 var MyName = GetCurrentResourceName();
@@ -420,7 +439,8 @@ NightClubs.forEach(club => {
     Sessions.set(club.id, {
         Host: null,
         Club: club,
-        Players: []
+        Players: [],
+        LightsState: true
     });
 });
 
@@ -433,7 +453,6 @@ function DebugLog(text, bypass) {
 }
 
 function TimeSince(date) {
-
     var seconds = Math.floor((new Date() - date) / 1000);
   
     var interval = seconds / 31536000;
@@ -459,7 +478,33 @@ function TimeSince(date) {
     }
 
     return Math.floor(seconds) + " s";
-  }
+}
+
+function ToggleNightclubLights(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+    
+    var Session = Sessions.get(clubId);
+    Session.LightsState = (Session.LightsState ? false : true);
+    Session.Players.forEach(async P => {
+        emitNet('Nightclubs:ToggleLights', P.id, (Session.LightsState ? false : true));
+        await Wait(100);
+    });
+
+    DebugLog(`ToggleNightclubLights: Lights in club ${clubId}: ${Session.LightsState}`);
+
+    return Session;
+}
+
+function GetClubLightsState(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+
+    var Session = Sessions.get(clubId);
+    return Session.LightsState;  
+}
+
+function ArrayRandom (arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
 
 function GetPlayerFullName(id) {
     return `[${id}] ${GetPlayerName(id)}`
@@ -475,11 +520,70 @@ function GetPlayers() {
     return t;
 }
 
+function GetPlayersIdentifiers(id) {
+    if (!id) return null;
+    var count = GetNumPlayerIdentifiers(id);
+    var arr = [];
+    for (let i = 0; i < count; i++) {
+        arr.push(GetPlayerIdentifier(id, i));
+    }
+
+    return arr;
+}
+
+function SetPlayerAsSessionHost(playerId, clubId) {
+    if (!playerId || !clubId || !Sessions.has(clubId)) return null;
+    
+    var Session = Sessions.get(clubId);
+    var PlayerInfo = GetPlayerFromCache(playerId);
+    Session.Host = GetPlayerFromCache(playerId);
+
+    DebugLog(`SetPlayerAsSessionHost: Player ${PlayerInfo.fullName} has been set as the host of ${clubId}.`);
+
+    return Session;
+}
+
+function GetSessionHost(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+
+    return (Sessions.get(clubId).Host || null);
+}
+
+function GetSession(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+    return Sessions.get(clubId);
+}
+
+function RemoveCurrentHostOfSession(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+    
+    var Session = Sessions.get(clubId);
+    Session.Host = null;
+
+    DebugLog(`RemoveCurrentHostOfSession: Club ${clubId} no longer has a host.`);
+
+    return Session;    
+}
+
+function DetermineSessionHost(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+    var Session = Sessions.get(clubId);
+    if (Session.Players.length > 0) {
+        var RandomPlayer = ArrayRandom(Session.Players);
+        DebugLog(`DetermineSessionHost: ${RandomPlayer.fullName} has been chosen as the host of club ${clubId}`);
+        return SetPlayerAsSessionHost(RandomPlayer.id, clubId);
+    } else {
+        DebugLog(`DetermineSessionHost: No players are inside the nightclub. Session host has been removed.`);
+        RemoveCurrentHostOfSession(clubId);
+        return false;
+    }
+}
+
 function AddPlayerToCache(id) {
     if (!id) {
         return null;
     } else if (IsPlayerCached(id)) {
-        DebugLog(`Error: Player ${id} is already cached.`, true);
+        DebugLog(`AddPlayerToCache: Player ${id} is already cached.`, true);
         return false;
     }
     
@@ -488,7 +592,7 @@ function AddPlayerToCache(id) {
         id: id,
         name: name,
         fullName: `[${id}] ${name}`,
-        identifiers: GetNumPlayerIdentifiers(id)
+        identifiers: GetPlayersIdentifiers(id)
     };
 
     PlayersCache.push(Info);
@@ -576,12 +680,13 @@ onNet('Nightclubs:ClubsRequest', () => {
     if (!IsPlayerCached(source)) AddPlayerToCache(source);
 });
 
-on('onResourceStop', (resource) => { // TEST THIS
+on('onResourceStop', (resource) => { 
     if (GetCurrentResourceName() === resource) {
         DebugLog(`^1The resource has stopped.^0`);
         InVirtualWorld.forEach(async p => {
             DebugLog(`Set virtual world to 0 for player [${p}] ${GetPlayerName(p)} due to resource stop.`);
             SetPlayerRoutingBucket(p, 0);
+            SendDebugMessage(p, `Your routing bucket has been set to 0`);
             await Wait(5);
         });
     }
@@ -601,17 +706,15 @@ function AddPlayerToNightclubSession(source, club) {
     if (!Sessions.has(club.id)) return false;
     
     var Session = Sessions.get(club.id);
-    Session.Players.push({
-        name: GetPlayerName(source),
-        id: source, 
-        enteredAt: Date.now()
-    });
-    Sessions.delete(club.id);
-    Sessions.set(club.id, Session);
+    var Player = GetPlayerFromCache(source);
+    Player.enteredAt = Date.now()
+    Session.Players.push(Player);
+    /*Sessions.delete(club.id);
+    Sessions.set(club.id, Session);*/
 
     DebugLog(`AddPlayerToNightclubSession: Added player ${GetPlayerFullName(source)} to a nightclub (${club.id} ${club.name}) session.`);
 
-    return Sessions;
+    return Session.Players;
 }
 
 function SessionsGetPlayer(playerId, clubId) {
@@ -620,6 +723,11 @@ function SessionsGetPlayer(playerId, clubId) {
     var result = Session.Players.find(Player => Player.id === playerId);
 
     return (result ? result : null);
+}
+
+function SessionsGetPlayers(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+    return Sessions.get(clubId).Players;
 }
 
 function GetPlayersFromNightclubsExcluding(clubId) {
@@ -638,17 +746,29 @@ function GetPlayersFromNightclubsExcluding(clubId) {
     return Players;
 }
 
+function GetNightclubPlayers(clubId) {
+    if (!clubId || !Sessions.has(clubId)) return null;
+
+    return Sessions.get(clubId).Players;
+}
+
 async function AcceptEnterRequest(source, club, EnterMethod) {
     DebugLog('AcceptEnterRequest: accepting enter req');
     if (RoutingBucketEnabled) {
         SetPlayerRoutingBucket(source, NightclubsWorldId);
         InVirtualWorld.push(source);
+        //SendDebugMessage(source, `Your routing bucket has been set to ${NightclubsWorldId}`);
         DebugLog(`AcceptEnterRequest: Set routing bucket of ${GetPlayerFullName(source)} to ${NightclubsWorldId}`);
     }
 
     await Wait(1000);
 
+    var SessionInfo = GetSession(club.id);
+    !SessionInfo.LightsState ? emitNet('Nightclubs:ToggleLights', source, true) : "";
+
     AddPlayerToNightclubSession(source, club);
+    if (!GetSessionHost(club.id)) DetermineSessionHost(club.id);
+
     var Players = GetPlayersFromNightclubsExcluding(club.id);
     emitNet("Nightclubs:EnterRequestAccepted", source, JSON.stringify(Players), EnterMethod);
     var Time = 0;
@@ -671,8 +791,11 @@ function RemovePlayerFromNightclubSession(source, club) {
 
     var Session = Sessions.get(club.id);
     Session.Players = Session.Players.filter(p => p.id !== source);
-    Sessions.delete(club.id);
-    Sessions.set(club.id, Session);
+    /*Sessions.delete(club.id);
+    Sessions.set(club.id, Session);*/
+
+    var sessionHost = GetSessionHost(club.id);
+    if (sessionHost && sessionHost.id === source) DetermineSessionHost(club.id);
 
     DebugLog(`RemovePlayerFromNightclubSession: Removed player ${GetPlayerFullName(source)} from session ${club.id}`);
 
@@ -683,9 +806,15 @@ function RunExitFunctions(source, club, Method) {
     if (RoutingBucketEnabled) {
         SetPlayerRoutingBucket(source, 0);
         InVirtualWorld = InVirtualWorld.filter(p => p !== source);
+        //SendDebugMessage(source, `Your routing bucket has been set to 0`);
         DebugLog(`RunExitFunctions: Set routing bucket of ${GetPlayerFullName(source)} **back** to 0`);
     }
     RemovePlayerFromNightclubSession(source, club);
+    var Session = GetSession(club.id);
+    if (Session.Players.length < 1 && !GetClubLightsState(club.id)) {
+        ToggleNightclubLights(club.id);
+        DebugLog(`Turning club lights on because no players are left in the nightclub.`);
+    }
 }
 
 function AcceptExitRequest(source, club, Method) {
@@ -751,7 +880,19 @@ function GetClubTxd(clubId) {
 
 function SendErrorMessage(playerId, msg) {
     if (!playerId || !msg) return false;
-    emitNet('chat:addMessage', playerId, {args: ['^1Error', msg]});
+    emitNet('chat:addMessage', playerId, {args: ['^1ERROR', msg]});
+    return true;
+}
+
+function SendSuccessMessage(playerId, msg) {
+    if (!playerId || !msg) return false;
+    emitNet('chat:addMessage', playerId, {args: ['^2SUCCESS', msg]});
+    return true;
+}
+
+function SendDebugMessage(playerId, msg) {
+    if (!playerId || !msg || !DebugLogsEnabled) return false;
+    emitNet('chat:addMessage', playerId, {args: ['^5DEBUG', msg]});
     return true;
 }
 
@@ -772,16 +913,22 @@ onNet("Nightclubs:ExitRequest", (clubString, Method) => {
 
 on('playerDropped', reason => {
     var source = global.source;
+    var PlayerInfo = GetPlayerFromCache(source);
     var club = GetNightclubPlayerIsIn(source)
     if (club) {
-        DebugLog(`${GetPlayerFullName(source)} dropped (reason: ${reason}) while inside a nightclub. Removing them from session...`);
+        DebugLog(`${PlayerInfo.fullName} dropped (reason: ${reason}) while inside a nightclub. Removing them from session...`);
         RemovePlayerFromNightclubSession(source, club);
         RemovePlayerFromCache(source);
         InVirtualWorld = InVirtualWorld.filter(vwp => vwp !== source);
+        var sessionHost = GetSessionHost(club.id);
+        if (sessionHost && (sessionHost.id === source)) {
+            DebugLog(`playerDropped: ${PlayerInfo.fullName} was the host of club ${club.name}. New host will be determined for this club...`);
+            DetermineSessionHost(club.id);
+        }
     }
 });
 
-function CMD (source, args) {
+function CMD(source, args) {
     if (args.length < 1) return emitNet("chat:addMessage", source, {
         args: [
             "^1Error", "Not enough arguments. Try /clubs help"
@@ -843,6 +990,7 @@ function CMD (source, args) {
             emitNet('Nightclubs:Bigfeed', source, "Nightclubs", "NightclubsInformation", "NightclubsHelpBody", "foreclosures_club", "lighting4", 0, "Close", true, true);
         break;
         case 'invite':
+        case 'inv':
             if (!args[1]) return SendErrorMessage(source, `Incorrect syntax.`);
             var Player = SearchPlayerFromCacheWithName(args.slice(1).join(" "));
             var InvitersClub = GetNightclubPlayerIsIn(source);
@@ -860,7 +1008,7 @@ function CMD (source, args) {
             var Invite = CreateInvite(source, Player.id, InvitersClub);
 
             emitNet('Nightclubs:InviteNotification', Player.id, JSON.stringify(InviterInfo), JSON.stringify(InvitersClub), Invite);
-            emitNet('chat:addMessage', source, {args: ['^2Success', `Invited ${Player.name} to ${InvitersClub.name}`]});
+            SendSuccessMessage(source, `Invited ${Player.name} to ${InvitersClub.name}`);
         break;
         case 'accept':
             if (!args[1]) return emitNet('chat:addMessage', source, {args: ['^1Syntax', `/club accept <Invite ID>. Use /club invites to view all your invites.`]});
@@ -878,6 +1026,7 @@ function CMD (source, args) {
             emitNet('Nightclubs:TpToClubInside', source, JSON.stringify(Invite.club));
         break;
         case 'invites':
+        case 'invs':
             var Invites = GetPlayersInvites(source);
             if (Invites.length < 1) return SendErrorMessage(source, `No invites yet...`);
             var Fields = [];
@@ -919,14 +1068,75 @@ function CMD (source, args) {
     }
 }
 
+function HOST_CMD(source, args) {
+    var club = GetNightclubPlayerIsIn(source);
+    if (!club) {
+        return SendErrorMessage(source, `This command is for nightclub session hosts only.`);
+    } else if (args.length < 1) return SendErrorMessage(source, `Not enough arguments have been specified.`);
+    var SessionHost = GetSessionHost(club.id);
+    if (SessionHost && SessionHost.id !== source) return SendErrorMessage(source, `This command is for nightclub session hosts only.`);
+
+    switch (args[0].toLowerCase()) {
+        case 'transfer':
+        case 'change':
+        case 'set':
+            if (!args[1]) return SendErrorMessage(source, `You didn't specify a player.`);
+            var Player = SearchPlayerFromCacheWithName(args.slice(1).join(" "));
+            if (!Player) return SendErrorMessage(source, `No player results for: ${args.slice(1).join(" ")}`);
+            SetPlayerAsSessionHost(Player.id, club.id);
+            SendSuccessMessage(source, `${Player.name} has been set as the host of ${club.name}.`);
+            emitNet('Nightclubs:WarningMessage', Player.id, 'NightclubsHostTransferred', "NightclubsSessionHostTransferred");
+        break;
+        case 'kick':
+        case 'remove':
+            if (!args[1]) return SendErrorMessage(source, `You didn't specify a player.`);
+            var Player = SearchPlayerFromCacheWithName(args.slice(1).join(" "));
+            if (!Player) return SendErrorMessage(source, `No player results for: ${args.slice(1).join(" ")}`);  
+            var Session = SessionsGetPlayer(Player.id, club.id);
+            if ((Date.now() - Session.enteredAt) <= 10000) return SendErrorMessage(source, `Exit cooldown active... try again later!`);
+
+            RunExitFunctions(Player.id, club, 1);
+            emitNet('Nightclubs:ExitNightClub', Player.id, JSON.stringify(club)); // "NightclubsKicked"
+            emitNet('Nightclubs:WarningMessage', Player.id, 'NULL', "NightclubsKicked", 2500);
+        break;
+        case 'invite':
+        case 'inv':
+            CMD(source, args);
+        break;
+        case 'lights':
+        case 'light':
+            ToggleNightclubLights(club.id);
+        break;
+        case 'notify':
+        case 'notification':
+        case 'message':
+        case 'msg':
+        case 'announce':
+        case 'announcement':
+            if (!args[1]) return SendErrorMessage(source, `You didn't specify a message.`);
+            var Players = GetNightclubPlayers(club.id);
+            Players.forEach(async player => {
+                emitNet('Nightclubs:BasicThefeedPost', player.id, `<C>MESSAGE FROM CLUB'S HOST</C>\n${args.slice(1).join(' ')}`, 21);
+                await Wait(100);
+            });
+        break;
+        case 'help':
+            emitNet('Nightclubs:Bigfeed', source, "Nightclubs", "NightclubsInformation", "NightclubsHelpBody_Host", "foreclosures_club", "lighting4", 0, "Close", true, true);
+        break;
+        default:
+            return SendErrorMessage(source, 'Invalid arguments. Try looking at /clubhost help');
+        break;
+    }
+    
+}
+
+RegisterCommand('clubhost', HOST_CMD);
+RegisterCommand('nightclubhost', HOST_CMD);
 RegisterCommand('club', CMD);
 RegisterCommand('clubs', CMD);
 RegisterCommand('nightclub', CMD);
 RegisterCommand('nightclubs', CMD);
-/*RegisterCommand('clubseval', (source, args) => {
+RegisterCommand('clubseval', (source, args) => {
     const evaled = eval(args.join(" "));
     console.log(evaled)
-});
-RegisterCommand('addfakeplayer', (source, args) => {
-    AddPlayerToNightclubSession(parseInt(args[0]), {id: parseInt(args[1])});
-});*/
+}, true);
