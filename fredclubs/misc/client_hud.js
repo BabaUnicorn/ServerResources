@@ -8,8 +8,12 @@ AddTextEntry("NightclubsServerTakingTooLongWarningMessageBody", "The server is t
 AddTextEntry("NightclubsWelcomeFeedPost", "Enjoy your stay!");
 AddTextEntry("NightclubsOutOfInterior", "You have been removed from the nightclub automatically because you left the interior's bounds. Feel free to re-enter from the exterior.");
 AddTextEntry("NightclubsToggled", "Clubs are now ~a~. Type ~p~/clubs toggle ~w~to undo.");
-AddTextEntry("NightclubsInviteReceived", "You have been invited to a Nightclub. Type ~h~/club accept ~a~~h~ to accept this invite.");
+AddTextEntry("NightclubsInviteReceived", "You have been invited to a Nightclub. Type ~h~/club accept ~a~~h~ to accept this invite. Type ~h~/club invites~h~ to view all invites.");
 AddTextEntry("NightclubsErrorUnavailable", "This action is currently unavailable. Try again later.");
+AddTextEntry("NightclubsHostTransferred", "Host transferred");
+AddTextEntry("NightclubsSessionHostTransferred", "You have been set as the session host of this nightclub. Use ~p~/clubhost help ~w~to view all the commands that are available to you.");
+AddTextEntry("NightclubsKicked", "You have been kicked from the nightclub by its current host.");
+AddTextEntry("NightclubsVehicleDeleted", "Your vehicle has been deleted.");
 AddTextEntry("NightclubsHelpBody", `Nightclubs are located all over Los Santos. `+
 `You can easily find them by checking your Pause Menu map. Once you're near a Club, go inside one of its markers and press ~h~[E]~h~ to enter.`+
 `\nThere are various commands you can use:\n`+
@@ -22,24 +26,51 @@ AddTextEntry("NightclubsHelpBody", `Nightclubs are located all over Los Santos. 
 `~p~/club invite [player name] ~w~- Invite a player to your nightclub\n`+
 `~p~/club accept [invite id] ~w~- Accept an invite`+
 `\nHave fun!`);
+AddTextEntry("NightclubsHelpBody_Host", `~p~/clubhost set [player name] ~w~- Make someone else a host (removes your privileges)\n`+
+`~p~/clubhost kick [player name] ~w~- Kick someone from the nightclub\n`+
+`~p~/clubhost lights ~w~- Toggle lights inside the nightclub\n`+
+`~p~/clubhost notify [message] ~w~- Send everyone inside club a message\n`+
+`~p~/clubhost help ~w~- Shows this screen\n`+
+`~HUD_COLOUR_GREY~Note: Leaving the nightclub will remove you as the host and choose someone else.`);
 
+var MyName = GetCurrentResourceName();
 var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : DrawTickRate));
 var ClubBlips = [];
+var InteriorBlips = []
 var DrawTickRate = 3;
 var LoadingScreenActive = false;
 var DebugLogsEnabled = true;
 var CurrentClubBlip = null;
+var ClubsDefaultBlipColour = 0;
+var ClubsDefaultBlipScale = 1;
 var ExitBlip = null;
 var GarageBlip = null;
 var NightclubsTxd = CreateRuntimeTxd('script_nightclubs');
-var Textures = new Map();
+var ArtificialLightsState = false;
 
 function DebugLog(text, bypass) {
     if (DebugLogsEnabled || bypass) {
         var date = new Date();
         var time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-        console.log(`^6(${time}) ^0${text}`);
+        console.log(`^6(${time}) ${MyName} debug: ^0${text}`);
     }
+}
+
+function SetBlipAsInterior (blip) {
+	if (!blip) return false;
+	InteriorBlips.push(blip);
+	DebugLog(`SetBlipAsInterior: Blip ${blip} has been set as an interior blip.`);
+	return blip;
+}
+
+function ClearInteriorBlips() {
+	DebugLog(`ClearInteriorBlips: Clearing ${InteriorBlips.length} interior blips`);
+	InteriorBlips.length = 0;
+	return true;
+}
+
+function IsInteriorBlip(blip) {
+	return (InteriorBlips.includes(blip) ? true : false);
 }
 
 function PrepareImageForThefeedIcon(url, width, height, txn) {
@@ -60,12 +91,11 @@ function PrepareImageForThefeedIcon(url, width, height, txn) {
 	}
 }
 
-PrepareImageForThefeedIcon('https://i.imgur.com/grmNI6m.png', 707, 707, "nightclubs_default");
-
 function SetGarageBlip() {
     GarageBlip = AddBlipForCoord(-1643.954956054, -2989.80908203125, -76.78476189208984);
     SetBlipSprite(GarageBlip, 357);
     SetBlipScale(GarageBlip, 1.2);
+	SetBlipAsInterior(GarageBlip);
 
     DebugLog(`Added garage exit blip: ${GarageBlip}`);
 
@@ -84,6 +114,7 @@ function SetExitBlip() {
     SetBlipSprite(ExitBlip, 364);
     SetBlipScale(ExitBlip, 1);
     SetBlipColour(ExitBlip, 1);
+	SetBlipAsInterior(ExitBlip);
 
     DebugLog(`Added exit blip: ${ExitBlip}`);
 
@@ -124,8 +155,8 @@ function SetBlipForClub (clubInfo) {
 
     var Blip = AddBlipForCoord(clubInfo.coords[0], clubInfo.coords[1], clubInfo.coords[2]);
     SetBlipSprite(Blip, clubInfo.blipSprite ? clubInfo.blipSprite : 614);
-    if (clubInfo.blipColor) SetBlipColour(Blip, clubInfo.blipColor);
-    SetBlipScale(Blip, 1.2);
+    SetBlipColour(Blip, clubInfo.blipColor || ClubsDefaultBlipColour);
+    SetBlipScale(Blip, ClubsDefaultBlipScale);
     SetBlipAsShortRange(Blip, true);
     BeginTextCommandSetBlipName(clubInfo.blipTextLabel ? clubInfo.blipTextLabel : "NightclubsBlipName_1");
     EndTextCommandSetBlipName(Blip);
@@ -160,6 +191,7 @@ async function StartupLoadingScreen () {
     SwitchOutPlayer(PlayerPedId(), 289263, 2);
     //SwitchOutPlayer(PlayerPedId(), 7373, 2);
     DisplayRadar(false);
+	SetPlayerControl(PlayerId(), false);
 
     while (!IsPlayerSwitchInProgress()) {
         await Wait(0);
@@ -167,11 +199,23 @@ async function StartupLoadingScreen () {
 
     DebugLog(`Loading screen started`);
     LoadingScreenActive = true;
+
+	while (LoadingScreenActive) {
+		SetMouseCursorActiveThisFrame();
+		/*DisableControlAction(0, 24, true); // attack
+		DisableControlAction(0, 25, true); // aim
+		DisableControlAction(0, 1, true); // camera movement left right
+		DisableControlAction(0, 2, true); // camera movement left right
+		DisableControlAction(0, 257, true); // attack2*/
+
+		await Wait(0);
+	}
 }
 
 function StopLoadingScreen () {
     StopPlayerSwitch();
     DisplayRadar(true);
+	SetPlayerControl(PlayerId(), true);
     DebugLog(`Loading screen stopped`);
     LoadingScreenActive = false;
 }
@@ -220,7 +264,7 @@ function GetClubTxd(clubId) {
 	}
 }
 
-function ScaleformMouse (EnableRot, RotSpeed) {
+function ScaleformMouse (EnableRot = false, RotSpeed = 2) {
 	SetMouseCursorActiveThisFrame();
 	
 	DisableControlAction(0, 24, true); // attack
@@ -235,7 +279,6 @@ function ScaleformMouse (EnableRot, RotSpeed) {
 		var CamHeading = GetGameplayCamRelativeHeading();
 		var CursorX = GetDisabledControlNormal(0, 239);
 		var CursorY = GetDisabledControlNormal(0, 240);
-		if (!RotSpeed) RotSpeed = 2;
 		if (CursorX <= 0.02) {
 			//console.log("rotate left")
 			if (MouseSprite !== 6) {
@@ -283,18 +326,87 @@ async function AddTextComponentsFromArray (Arr) {
 	}
 }
 
-async function Scoreboard (Title, Slots, WaitBeforeAllowingConfirm, ButtonText, EnableMouse) {
-	if (!Title) Title = "Title";
-	if (!Slots) Slots = [
-		{
-			Left_Text: "Text1",
-			Right_Text: "Text2"
-		}
-	];
-	if (!WaitBeforeAllowingConfirm) WaitBeforeAllowingConfirm = 0;
-	if (!ButtonText) ButtonText = "OK";
-	if (!EnableMouse && EnableMouse !== false) EnableMouse = false;
+async function PopupMessage (Header = 'alert', BodyText1 = '...', BodyText2 = '...', WaitBeforeAllowingConfirm = 0, ButtonText = GetLabelText('IB_OK'), EnableMouse = true, UseTextEntries = false, HeaderTextComponents, BodyTextComponents, BodyText2Components) {
+	var Popup_Body = RequestScaleformMovie("POPUP_WARNING"),
+	Popup_Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
+	while (!HasScaleformMovieLoaded(Popup_Body) || !HasScaleformMovieLoaded(Popup_Button)) { 
+		await Wait(100); 
+	}
+ 
+	DebugLog(`Popup_Body=${Popup_Body} Popup_Button=${Popup_Button}`);
 
+	(function SetupBody () {
+		BeginScaleformMovieMethod(Popup_Body, "SHOW_POPUP_WARNING");
+		ScaleformMovieMethodAddParamFloat(500.0);
+		if (UseTextEntries) {
+			BeginTextCommandScaleformString(Header);
+			AddTextComponentsFromArray(HeaderTextComponents);
+			EndTextCommandScaleformString();
+			BeginTextCommandScaleformString(BodyText1);
+			AddTextComponentsFromArray(BodyTextComponents);
+			EndTextCommandScaleformString();
+			BeginTextCommandScaleformString(BodyText2);
+			AddTextComponentsFromArray(BodyText2Components);
+			EndTextCommandScaleformString();
+		} else { 
+			ScaleformMovieMethodAddParamPlayerNameString(Header);
+			ScaleformMovieMethodAddParamPlayerNameString(BodyText1);
+			ScaleformMovieMethodAddParamPlayerNameString(BodyText2);
+		}
+		EndScaleformMovieMethod();
+	})();
+ 
+	(function SetupButton () {
+		BeginScaleformMovieMethod(Popup_Button, "CLEAR_ALL");
+		EndScaleformMovieMethod();
+ 
+		BeginScaleformMovieMethod(Popup_Button, "SET_DATA_SLOT");
+		ScaleformMovieMethodAddParamInt(0); // Position
+		ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_ACCEPT~");
+		ScaleformMovieMethodAddParamPlayerNameString(ButtonText);
+		EndScaleformMovieMethod();
+ 
+		BeginScaleformMovieMethod(Popup_Button, "DRAW_INSTRUCTIONAL_BUTTONS");
+		EndScaleformMovieMethod();
+	})();
+ 
+ 
+	var KeepDisplaying = true;
+	function StopDisplaying () {
+		KeepDisplaying = false;
+		SetScaleformMovieAsNoLongerNeeded(Popup_Body);
+		BeginScaleformMovieMethod(Popup_Button, "CLEAR_ALL");
+		EndScaleformMovieMethod();
+		SetScaleformMovieAsNoLongerNeeded(Popup_Button);
+		PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_MP_SOUNDSET");
+	}
+ 
+
+	var DisplayingSince = Date.now()
+	while (KeepDisplaying) {
+		var CurrentTime = Date.now()
+
+		DrawScaleformMovieFullscreen(Popup_Body, 255, 255, 255, 255, 0)
+		DrawScaleformMovieFullscreen(Popup_Button, 255, 255, 255, 255, 0)
+ 
+		HideHudAndRadarThisFrame();
+		DisableControlAction(2, 200);
+ 
+		if (EnableMouse) ScaleformMouse();
+
+		if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 202) || IsControlJustReleased(2, 238) || IsControlJustReleased(2, 237)) {
+			if (CurrentTime - DisplayingSince >= WaitBeforeAllowingConfirm) {
+				StopDisplaying();
+			} else  {
+				PlaySoundFrontend(-1, "ERROR", "HUD_FRONTEND_DEFAULT_SOUNDSET");
+			}
+		}
+
+		await Wait();
+	}
+}
+
+async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingConfirm = 0, ButtonText = 'OK', EnableMouse = true) {
 	var ScoreBoard = RequestScaleformMovie("MP_ONLINE_LIST_CARD"),
 	Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
     while (!HasScaleformMovieLoaded(ScoreBoard) || !HasScaleformMovieLoaded(Button)) {
@@ -306,7 +418,7 @@ async function Scoreboard (Title, Slots, WaitBeforeAllowingConfirm, ButtonText, 
     EndScaleformMovieMethod();
 
 	if (typeof(Slots) === 'string') Slots = JSON.parse(Slots);
-	console.log(Slots)
+
 	var Index = 0;
 	Slots.forEach(async Slot => {
 		Index += 1;
@@ -315,17 +427,13 @@ async function Scoreboard (Title, Slots, WaitBeforeAllowingConfirm, ButtonText, 
 		ScaleformMovieMethodAddParamInt(0);
 		ScaleformMovieMethodAddParamInt(0);
 		ScaleformMovieMethodAddParamInt(0); 
-		ScaleformMovieMethodAddParamInt(Slot.Right_Text_Background_Banner ? Slot.Right_Text_Background_Banner : 0); // right text background banner color
+		ScaleformMovieMethodAddParamInt(Slot.Right_Text_Background_Banner || 0); // right text background banner color
 		ScaleformMovieMethodAddParamInt(0);
-		PushScaleformMovieFunctionParameterString(Slot.Left_Text);
-			ScaleformMovieMethodAddParamInt(Slot.Rockstar_Icon ? Slot.Rockstar_Icon : 0); // rockstar icon
-			ScaleformMovieMethodAddParamInt(Slot.Icon ? Slot.Icon : 0); // icons
-		if (Slot.Right_Text) {
-			PushScaleformMovieFunctionParameterString(Slot.Right_Text);
-		}
+		PushScaleformMovieFunctionParameterString(Slot.Left_Text || "");
+		ScaleformMovieMethodAddParamInt(Slot.Rockstar_Icon || 0); // rockstar icon
+		ScaleformMovieMethodAddParamInt(Slot.Icon || 0); // icons
+		PushScaleformMovieFunctionParameterString(Slot.Right_Text || "");
 		EndScaleformMovieMethod();
-
-		console.log("addign slot")
 
 		await Wait(50);
 	});
@@ -333,21 +441,11 @@ async function Scoreboard (Title, Slots, WaitBeforeAllowingConfirm, ButtonText, 
 	(function SetupButton() {
 		BeginScaleformMovieMethod(Button, "CLEAR_ALL");
 		EndScaleformMovieMethod();
-	 
-		if (EnableMouse) {
-			BeginScaleformMovieMethod(Button, "TOGGLE_MOUSE_BUTTONS");
-			ScaleformMovieMethodAddParamBool(true);
-			EndScaleformMovieMethod();
-		}
 
 		BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
 		ScaleformMovieMethodAddParamInt(0);
 		ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_ACCEPT~");
 		PushScaleformMovieMethodParameterString(ButtonText);
-		if (EnableMouse) {
-			ScaleformMovieMethodAddParamBool(EnableMouse);
-			ScaleformMovieMethodAddParamInt(201);
-		}
 		EndScaleformMovieMethod();
 
 		BeginScaleformMovieMethod(Button, "DRAW_INSTRUCTIONAL_BUTTONS")
@@ -365,14 +463,12 @@ async function Scoreboard (Title, Slots, WaitBeforeAllowingConfirm, ButtonText, 
 		KeepDisplaying = false;
 	}
 
-	var StartedDrawing = GetGameTimer();
+	var StartedDrawing = Date.now();
 	while (KeepDisplaying) {
-		var CurrentTime = GetGameTimer();
+		var CurrentTime = Date.now();
 
-		if (!IsPauseMenuActive()) { 
-			DrawScaleformMovie(ScoreBoard, 0.5, 0.5, 0.34, 0.84, 0, 0, 0, 100); 
-			DrawScaleformMovieFullscreen(Button, 255, 255, 255, 255, 0);
-		}
+		DrawScaleformMovie(ScoreBoard, 0.5, 0.5, 0.34, 0.84, 0, 0, 0, 100); 
+		DrawScaleformMovieFullscreen(Button, 255, 255, 255, 255, 0);
 
 		if (EnableMouse) {
 			ScaleformMouse();
@@ -380,13 +476,10 @@ async function Scoreboard (Title, Slots, WaitBeforeAllowingConfirm, ButtonText, 
 
 		DisableControlAction(2, 200);
 
-		if (IsControlJustReleased(0, 201) /*[[INPUT_FRONTEND_ACCEPT]]*/ || IsControlJustReleased(0, 202) /*[[INPUT_FRONTEND_CANCEL]]*/ 
-		|| IsControlJustReleased(0, 238) /*[[Rightclick]]*/) {
+		if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 202) || IsControlJustReleased(2, 238) || IsControlJustReleased(2, 237)) {
 			if ((CurrentTime - StartedDrawing) >= WaitBeforeAllowingConfirm) {
 				StopDisplaying()
 			} else {
-				console.log(CurrentTime - StartedDrawing)
-				console.log(WaitBeforeAllowingConfirm)
 				PlaySoundFrontend(-1, "ERROR", "HUD_FRONTEND_DEFAULT_SOUNDSET");
 			}
 		}
@@ -395,9 +488,7 @@ async function Scoreboard (Title, Slots, WaitBeforeAllowingConfirm, ButtonText, 
 	}
 }
 
-async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfirm, ButtonText, MouseEnabled, UseTextLabels, TitleTextComponents, SubtitleTextComponents, BodyTextComponents) {
-	if (!WaitBeforeAllowingConfirm) WaitBeforeAllowingConfirm = 0;
-
+async function Bigfeed (Title = ' ', Subtitle = '', Body = '', txd, txn, WaitBeforeAllowingConfirm = 0, ButtonText = 'OK', MouseEnabled = true, UseTextLabels, TitleTextComponents, SubtitleTextComponents, BodyTextComponents) {
 	var BigFeed = RequestScaleformMovie('GTAV_ONLINE'),
 	Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
 
@@ -418,7 +509,7 @@ async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfi
 	} else {
 		ScaleformMovieMethodAddParamPlayerNameString(Body);
 	}
-	ScaleformMovieMethodAddParamInt(0); // whichTab, useless
+	ScaleformMovieMethodAddParamInt(0); // whichTab
 	ScaleformMovieMethodAddParamPlayerNameString(""); //txd
 	ScaleformMovieMethodAddParamPlayerNameString(""); //txn
 	if (UseTextLabels) { //subtitle
@@ -471,7 +562,7 @@ async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfi
 	BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
 	ScaleformMovieMethodAddParamInt(0); // Position
 	ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_ACCEPT~");
-	ScaleformMovieMethodAddParamPlayerNameString(ButtonText ? ButtonText : "OK");
+	ScaleformMovieMethodAddParamPlayerNameString(ButtonText);
 	EndScaleformMovieMethod();
 
 	BeginScaleformMovieMethod(Button, "DRAW_INSTRUCTIONAL_BUTTONS");
@@ -488,20 +579,19 @@ async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfi
 		PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_MP_SOUNDSET");
 	}
 
-	var StartedDrawing = GetGameTimer();
+	var StartedDrawing = Date.now();
 	while (KeepDisplaying) {
-		var CurrentTime = GetGameTimer();
+		var CurrentTime = Date.now();
 
 		if (MouseEnabled) ScaleformMouse();
 
 		DrawScaleformMovieFullscreen(Button, 255, 255, 255, 255, 0);
 		DrawScaleformMovieFullscreen(BigFeed, 255, 255, 255, 255, 0);
-		DisableControlAction(2, 200);
 
+		DisableControlAction(2, 200);
 		HideHudAndRadarThisFrame();
 
-		if (IsControlJustReleased(0, 201) /*[[INPUT_FRONTEND_ACCEPT]]*/ || IsControlJustReleased(0, 202) /*[[INPUT_FRONTEND_CANCEL]]*/ 
-		|| IsControlJustReleased(0, 238) /*[[Rightclick]]*/ || IsControlJustReleased(0, 237) /*Leftclick*/ ) {
+		if (IsControlJustReleased(0, 201) || IsControlJustReleased(0, 202) || IsControlJustReleased(0, 238) || IsControlJustReleased(0, 237)) {
 			if (CurrentTime - StartedDrawing >= WaitBeforeAllowingConfirm) {
 				StopDisplaying()
 			} else  {
@@ -513,66 +603,65 @@ async function Bigfeed (Title, Subtitle, Body, txd, txn, WaitBeforeAllowingConfi
 	}
 }
 
-async function Scoreboard_2(Header, Titles, Slots, WaitBeforeAllowingConfirm, Buttons, EnableMouse) {
-	if (!Header) Header = "Scoreboard";
-	if (!Titles) Titles = ['title1', 'title2', 'title3', 'title4', 'title5', 'title6', 'title7', 'title8'];
-	if (!Slots) Slots = [
-		{
-			type: 1,
-			text1: 'slot1',
-			text2: 'slot2',
-			text3: 'slot3',
-			text4: 'slot4',
-			text5: 'slot5',
-			text6: 'slot6',
-			text7: 'slot7',
-			text8: 'slot8',
-			text9: 'slot9',
-			text10: 'slot10'
-		},
-		{
-			type: 0,
-			text1: '4',
-			text2: 'iii',
-			text3: '{*%NE',
-			text4: 'slot4',
-			text5: 'slot5',
-			text6: 'slot6',
-			text7: 'slot7',
-			text8: 'slot8',
-			text9: 'slot9',
-			text10: 'slot10'
-		},
-		{
-			type: 10,
-			text1: '4',
-			text2: 'iii',
-			text3: '{*%NE',
-			text4: 'slot4',
-			text5: 'slot5',
-			text6: 'slot6',
-			text7: 'slot7',
-			text8: 'slot8',
-			text9: 'slot9',
-			text10: 'slot10'
-		}
-	];
-	if (!Buttons) Buttons = [
-		{
-			button: "~INPUT_FRONTEND_ACCEPT~",
-			text: "OK"
-		},
-		{
-			button: "~INPUT_FRONTEND_CANCEL~",
-			text: "Back"
-		}
-	];
-
+var Scoreboard_2_DefaultTitles = ['title1', 'title2', 'title3', 'title4', 'title5', 'title6', 'title7', 'title8'];
+var Scoreboard_2_DefaultSlots = [
+	{
+		type: 1,
+		text1: 'slot1',
+		text2: 'slot2',
+		text3: 'slot3',
+		text4: 'slot4',
+		text5: 'slot5',
+		text6: 'slot6',
+		text7: 'slot7',
+		text8: 'slot8',
+		text9: 'slot9',
+		text10: 'slot10'
+	},
+	{
+		type: 0,
+		text1: '4',
+		text2: 'iii',
+		text3: '{*%NE',
+		text4: 'slot4',
+		text5: 'slot5',
+		text6: 'slot6',
+		text7: 'slot7',
+		text8: 'slot8',
+		text9: 'slot9',
+		text10: 'slot10'
+	},
+	{
+		type: 10,
+		text1: '4',
+		text2: 'iii',
+		text3: '{*%NE',
+		text4: 'slot4',
+		text5: 'slot5',
+		text6: 'slot6',
+		text7: 'slot7',
+		text8: 'slot8',
+		text9: 'slot9',
+		text10: 'slot10'
+	}
+];
+Scoreboard_2_DefaultButtons = [
+	{
+		button: "~INPUT_FRONTEND_ACCEPT~",
+		text: GetLabelText('IB_OK')
+	},
+	{
+		button: "~INPUT_FRONTEND_CANCEL~",
+		text: GetLabelText('IB_BACK')
+	}
+];
+async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Slots = Scoreboard_2_DefaultSlots, WaitBeforeAllowingConfirm = 0, Buttons = Scoreboard_2_DefaultButtons, EnableMouse = true) {
 	var Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
 	var Scaleform = RequestScaleformMovie('SC_LEADERBOARD');
 	while (!HasScaleformMovieLoaded(Button) || !HasScaleformMovieLoaded(Scaleform)) {
 		await Wait();
 	}
+
 	(function SetupButton () {
 		BeginScaleformMovieMethod(Button, "CLEAR_ALL");
 		EndScaleformMovieMethod();
@@ -597,7 +686,7 @@ async function Scoreboard_2(Header, Titles, Slots, WaitBeforeAllowingConfirm, Bu
 	EndScaleformMovieMethod();	
  
 	BeginScaleformMovieMethod(Scaleform, "SET_MULTIPLAYER_TITLE");
-	ScaleformMovieMethodAddParamPlayerNameString(Header)
+	ScaleformMovieMethodAddParamPlayerNameString(Header);
 	EndScaleformMovieMethod();
  
 	BeginScaleformMovieMethod(Scaleform, "SET_TITLE");
@@ -630,50 +719,59 @@ async function Scoreboard_2(Header, Titles, Slots, WaitBeforeAllowingConfirm, Bu
 	});
  
 	var KeepDisplaying = true;
- 
+	var StartedDrawing = Date.now()
 	while (KeepDisplaying) {
+		var CurrentTime = Date.now();
+
 		DrawScaleformMovieFullscreen(Button, 255, 255, 255, 255, 0);
 		DrawScaleformMovieFullscreen(Scaleform, 255, 255, 255, 255, 0);
  
 		DisableControlAction(2, 200);
  
-		SetMouseCursorActiveThisFrame();
-		DisableControlAction(0, 24, true); // attack
-		DisableControlAction(0, 25, true); // aim
-		DisableControlAction(0, 1, true); //camera movement left right
-		DisableControlAction(0, 2, true); // camer movement left right
-		DisableControlAction(0, 16, true); 
-		DisableControlAction(0, 17, true);
-		DisableControlAction(0, 257, true);
+		if (EnableMouse) ScaleformMouse();
  
 		if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 202) || IsControlJustReleased(0, 238) || IsControlJustReleased(0, 237)) {
-			KeepDisplaying = false;
-			BeginScaleformMovieMethod(Button, "CLEAR_ALL");
-			EndScaleformMovieMethod();
-			SetScaleformMovieAsNoLongerNeeded(Button);
-			SetScaleformMovieAsNoLongerNeeded(Scaleform);
-			PlaySoundFrontend(-1, 'BACK', 'HUD_FRONTEND_DEFAULT_SOUNDSET')
+			if (CurrentTime - StartedDrawing >= WaitBeforeAllowingConfirm) {
+				KeepDisplaying = false;
+				BeginScaleformMovieMethod(Button, "CLEAR_ALL");
+				EndScaleformMovieMethod();
+				SetScaleformMovieAsNoLongerNeeded(Button);
+				SetScaleformMovieAsNoLongerNeeded(Scaleform);
+				PlaySoundFrontend(-1, 'BACK', 'HUD_FRONTEND_DEFAULT_SOUNDSET');
+			} else {
+				PlaySoundFrontend(-1, 'ERROR', 'HUD_FRONTEND_DEFAULT_SOUNDSET');
+			}
 		}
  
 		await Wait();
 	}
 }
 
-async function WarningMessage(HeaderTextLabel, BodyTextLabel, Background) {
-	if (!BodyTextLabel) BodyTextLabel = 'NightclubsServerTakingTooLongWarningMessageBody';
+async function WarningMessage(HeaderTextLabel, BodyTextLabel = 'NightclubsServerTakingTooLongWarningMessageBody', MsLock = 0, Background) {
 	DebugLog(`HeaderTextLabel=${HeaderTextLabel}`);
 	DebugLog(`BodyTextLabel=${BodyTextLabel}`);
+	DebugLog(`MsLock=${MsLock}`);
 	DebugLog(`Background=${Background}`);
 
 	var KeepLoop = true;
+	var StartedAt = Date.now();
 	while (KeepLoop) {
 		if (Background) SetWarningMessageWithHeader(HeaderTextLabel, BodyTextLabel, 2) 
 		else SetWarningMessageWithHeader(HeaderTextLabel, BodyTextLabel, 2, '', true, true, 0, true);
 
-		if (IsControlJustReleased(2, 201)) KeepLoop = false
+		if ((IsControlJustReleased(2, 201) || IsControlJustReleased(2, 238)) && (Date.now() - StartedAt >= MsLock)) {
+			KeepLoop = false;
+		}
 
 		await Wait();
 	}
+}
+
+function BasicThefeedPost(text, bgColor) {
+	if (bgColor) ThefeedNextPostBackgroundColor(bgColor);
+	BeginTextCommandThefeedPost(`STRING`);
+	AddTextComponentsFromArray(text);
+	EndTextCommandThefeedPostTicker(true, true);
 }
 
 async function InviteNotification(PlayerInfo, ClubInfo, InviteId) {
@@ -721,153 +819,17 @@ onNet("Nightclubs:Scoreboard", Scoreboard);
 onNet("Nightclubs:Scoreboard_2", Scoreboard_2);
 onNet("Nightclubs:WarningMessage", WarningMessage);
 onNet("Nightclubs:InviteNotification", InviteNotification);
-on('onResourceStop', (resource) => {
-	if (resource === GetCurrentResourceName()) {
-		SetScaleformMovieAsNoLongerNeeded(LoadingScreenBigfeed);
-	}
+onNet('Nightclubs:BasicThefeedPost', BasicThefeedPost);
+onNet('Nightclubs:PopupMessage', PopupMessage);
+onNet('Nightclubs:ToggleLights', toggle => {
+	SetArtificialLightsState(toggle);
+	ArtificialLightsState = toggle;
+	DebugLog(`Nightclubs:ToggleLights: SetArtificialLightsState(${toggle})`);
+	DebugLog(`Nightclubs:ToggleLights:ArtificialLightsState = ${toggle}`);
 });
 
-RegisterCommand('nightclubs::bigfeeddebug', () => {
-	Bigfeed(`Title`, `Subtitle`, `Body`, 'sc_leaderboard', 'sc_logo', 5000, 'OKOKOK', true, false, null, null, null);
-});
-RegisterCommand('nightclubs::scoreboard_2', () => {
-	Scoreboard_2();
-})
+RegisterCommand('nightclubs::bigfeeddebug', () => Bigfeed());
+RegisterCommand('nightclubs::scoreboard_2debug', () => Scoreboard_2())
 RegisterCommand('nightclubs::scoreboarddebug', () => Scoreboard());
 RegisterCommand('nightclubs::warningmessagedebug', () => WarningMessage());
-
-RegisterCommand('menutest', async () => {
-	var Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
-	var Scaleform = RequestScaleformMovie('SC_LEADERBOARD');
-	while (!HasScaleformMovieLoaded(Button) || !HasScaleformMovieLoaded(Scaleform)) {
-		await Wait();
-	}
-	(function SetupButton () {
-		BeginScaleformMovieMethod(Button, "CLEAR_ALL");
-		EndScaleformMovieMethod();
- 
-
- 
-		BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
-		ScaleformMovieMethodAddParamInt(0); // Position
-		ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_ACCEPT~");
-		ScaleformMovieMethodAddParamPlayerNameString("Select");
-		EndScaleformMovieMethod();
- 
-		BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
-		ScaleformMovieMethodAddParamInt(1); // Position
-		ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_CANCEL~");
-		ScaleformMovieMethodAddParamPlayerNameString("Back");
-		EndScaleformMovieMethod();
- 
-		BeginScaleformMovieMethod(Button, "DRAW_INSTRUCTIONAL_BUTTONS");
-		EndScaleformMovieMethod();
-	})();
- 
-	BeginScaleformMovieMethod(Scaleform, "SET_DISPLAY_TYPE");
-	EndScaleformMovieMethod();	
- 
-	BeginScaleformMovieMethod(Scaleform, "SET_MULTIPLAYER_TITLE");
-	ScaleformMovieMethodAddParamPlayerNameString('HEADER')
-	EndScaleformMovieMethod();
- 
-	BeginScaleformMovieMethod(Scaleform, "SET_TITLE");
-	ScaleformMovieMethodAddParamPlayerNameString('title1');
-	ScaleformMovieMethodAddParamPlayerNameString('title2')
-	ScaleformMovieMethodAddParamPlayerNameString('title3')
-	ScaleformMovieMethodAddParamPlayerNameString('title4')
-	ScaleformMovieMethodAddParamPlayerNameString('title5')
-	ScaleformMovieMethodAddParamPlayerNameString('title6')
-	ScaleformMovieMethodAddParamPlayerNameString('title7')
-	ScaleformMovieMethodAddParamPlayerNameString('title8')
- 
-	EndScaleformMovieMethod();
- 
-	BeginScaleformMovieMethod(Scaleform, "SET_SLOT");
-	ScaleformMovieMethodAddParamInt(0); // index
-	ScaleformMovieMethodAddParamInt(1); // BAR TYPE OR STATE
-	ScaleformMovieMethodAddParamPlayerNameString('slot2')
-	ScaleformMovieMethodAddParamPlayerNameString('slot3')
-	ScaleformMovieMethodAddParamPlayerNameString('slot4')
-	ScaleformMovieMethodAddParamPlayerNameString('slot5')
-	ScaleformMovieMethodAddParamPlayerNameString('slot6')
-	ScaleformMovieMethodAddParamPlayerNameString('slot7')
-	ScaleformMovieMethodAddParamPlayerNameString('slot8')
-	ScaleformMovieMethodAddParamPlayerNameString('slot9')
-	ScaleformMovieMethodAddParamPlayerNameString('slot10')
-	ScaleformMovieMethodAddParamPlayerNameString('slot11')
-	EndScaleformMovieMethod();
- 
-	BeginScaleformMovieMethod(Scaleform, "SET_SLOT");
-	ScaleformMovieMethodAddParamInt(1); // index
-	ScaleformMovieMethodAddParamInt(0)
-	ScaleformMovieMethodAddParamPlayerNameString('4')
-	ScaleformMovieMethodAddParamPlayerNameString('iii')
-	ScaleformMovieMethodAddParamPlayerNameString('{*%NE')
-	ScaleformMovieMethodAddParamPlayerNameString('asdasd')
-	ScaleformMovieMethodAddParamPlayerNameString('asdasd')
-	ScaleformMovieMethodAddParamPlayerNameString('asdasd')
-	ScaleformMovieMethodAddParamPlayerNameString('8888888')
-	ScaleformMovieMethodAddParamPlayerNameString('$8888888')
-	ScaleformMovieMethodAddParamPlayerNameString('88:88.888')
-	ScaleformMovieMethodAddParamPlayerNameString('324324')
-	EndScaleformMovieMethod();
- 
-	BeginScaleformMovieMethod(Scaleform, "SET_SLOT");
-	ScaleformMovieMethodAddParamInt(2); // index
-	ScaleformMovieMethodAddParamInt(10);
-	ScaleformMovieMethodAddParamPlayerNameString('whatever')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	ScaleformMovieMethodAddParamPlayerNameString('')
-	EndScaleformMovieMethod();
- 
-	BeginScaleformMovieMethod(Scaleform, "SET_SLOT");
-	ScaleformMovieMethodAddParamInt(3); // index
-	ScaleformMovieMethodAddParamInt(0);
-	ScaleformMovieMethodAddParamPlayerNameString('whatever2')
-	ScaleformMovieMethodAddParamPlayerNameString('asdasd')
-	ScaleformMovieMethodAddParamPlayerNameString('sdfsdf')
-	ScaleformMovieMethodAddParamPlayerNameString('dhdh')
-	ScaleformMovieMethodAddParamPlayerNameString('31134')
-	ScaleformMovieMethodAddParamPlayerNameString('134')
-	ScaleformMovieMethodAddParamPlayerNameString('34436')
-	ScaleformMovieMethodAddParamPlayerNameString('56567')
-	ScaleformMovieMethodAddParamPlayerNameString('5675')
-	ScaleformMovieMethodAddParamPlayerNameString('567567')
-	EndScaleformMovieMethod();
- 
-	var KeepDisplaying = true;
- 
-	while (KeepDisplaying) {
-		DrawScaleformMovieFullscreen(Button, 255, 255, 255, 255, 0);
-		DrawScaleformMovieFullscreen(Scaleform, 255, 255, 255, 255, 0);
- 
-		DisableControlAction(2, 200);
- 
-		SetMouseCursorActiveThisFrame();
-		DisableControlAction(0, 24, true); // attack
-		DisableControlAction(0, 25, true); // aim
-		DisableControlAction(0, 1, true); //camera movement left right
-		DisableControlAction(0, 2, true); // camer movement left right
-		DisableControlAction(0, 16, true); 
-		DisableControlAction(0, 17, true);
-		DisableControlAction(0, 257, true);
- 
-		if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 202)) {
-			KeepDisplaying = false;
-			SetScaleformMovieAsNoLongerNeeded(Button);
-			SetScaleformMovieAsNoLongerNeeded(Scaleform);
-		}
- 
-		DrawScaleformMovieFullscreen(BigFeed, 255, 255, 255, 255, 0);
-
-		await Wait(0);
-	}
-});
+RegisterCommand('nightclubs::popupmessagedebug', () => PopupMessage());
