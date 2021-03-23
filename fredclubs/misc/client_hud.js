@@ -13,6 +13,9 @@ AddTextEntry("NightclubsErrorUnavailable", "This action is currently unavailable
 AddTextEntry("NightclubsHostTransferred", "Host transferred");
 AddTextEntry("NightclubsSessionHostTransferred", "You have been set as the session host of this nightclub. Use ~p~/clubhost help ~w~to view all the commands that are available to you.");
 AddTextEntry("NightclubsKicked", "You have been kicked from the nightclub by its current host.");
+AddTextEntry("NightclubsKicked_2", "You have been kicked from the nightclub.");
+AddTextEntry("NightclubsKicked_3", "You have been temporarily banned from the nightclub.");
+AddTextEntry('NightclubsAdminAlert', "~r~ALERT");
 AddTextEntry("NightclubsVehicleDeleted", "Your vehicle has been deleted.");
 AddTextEntry("NightclubsHelpBody", `Nightclubs are located all over Los Santos. `+
 `You can easily find them by checking your Pause Menu map. Once you're near a Club, go inside one of its markers and press ~h~[E]~h~ to enter.`+
