@@ -433,6 +433,7 @@ var Sessions = new Map();
 var PlayersCache = [];
 var PlayerInvites = [];
 var InviteIds = 0;
+var IgnoringEntries = false;
 var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : TickRate));
 
 NightClubs.forEach(club => {
@@ -440,16 +441,28 @@ NightClubs.forEach(club => {
         Host: null,
         Club: club,
         Players: [],
-        LightsState: true
+        LightsState: true,
+        Bans: []
     });
 });
 
+function LogTimeString() {
+    var date = new Date();
+    return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
+
 function DebugLog(text, bypass) {
     if (DebugLogsEnabled || bypass) {
-        var date = new Date();
-        var time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-        console.log(`^6(${time}) ${MyName} debug: ^0${text}`);
+        console.log(`^6(${LogTimeString()}) ${MyName} debug: ^0${text}`);
     }
+}
+
+function ErrorLog(text) {
+    console.log(`^1(${LogTimeString()}) ${MyName} error: ^0${text}`);
+}
+
+function SuccessLog(text) {
+    console.log(`^2(${LogTimeString()}) ${MyName} success: ^0${text}`);
 }
 
 function TimeSince(date) {
@@ -502,7 +515,7 @@ function GetClubLightsState(clubId) {
     return Session.LightsState;  
 }
 
-function ArrayRandom (arr) {
+function ArrayRandom(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -541,6 +554,37 @@ function SetPlayerAsSessionHost(playerId, clubId) {
     DebugLog(`SetPlayerAsSessionHost: Player ${PlayerInfo.fullName} has been set as the host of ${clubId}.`);
 
     return Session;
+}
+
+function TempBanPlayerFromNightclub(playerId, clubId) {
+    if (!playerId || !clubId || !Sessions.has(clubId)) return null;
+
+    var Session = Sessions.get(clubId);
+    var PlayerInfo = GetPlayerFromCache(playerId);
+    Session.Bans.push(PlayerInfo);
+
+    DebugLog(`TempBanPlayerFromNightclub: Player ${PlayerInfo.fullName} has been banned from club ${clubId} until next session.`);
+
+    return Session;   
+}
+
+function IsPlayerBannedFromNightclub(playerId, clubId) {
+    if (!playerId || !clubId || !Sessions.has(clubId)) return null;
+
+    var Session = Sessions.get(clubId);
+    
+    return (Session.Bans.find(player => player.id === playerId) ? true : false);    
+}
+
+function RemovePlayersSessionBan(playerId, clubId) {
+    if (!playerId || !clubId || !Sessions.has(clubId)) return null;
+
+    var Session = Sessions.get(clubId);;
+    Session.Bans = Session.Bans.filter(ban => ban.id !== playerId);
+
+    DebugLog(`RemovePlayersSessionBan: Player ${playerId} has been unbanned from club ${clubId}.`);
+
+    return Session;     
 }
 
 function GetSessionHost(clubId) {
@@ -879,29 +923,62 @@ function GetClubTxd(clubId) {
 }
 
 function SendErrorMessage(playerId, msg) {
-    if (!playerId || !msg) return false;
-    emitNet('chat:addMessage', playerId, {args: ['^1ERROR', msg]});
+    if (!msg) return false;
+
+    switch (playerId) {
+        case 0:
+            ErrorLog(msg);
+        break;
+        default:
+            emitNet('chat:addMessage', playerId, {args: ['^1ERROR', msg]});
+        break;
+    }
+    
     return true;
 }
 
 function SendSuccessMessage(playerId, msg) {
-    if (!playerId || !msg) return false;
-    emitNet('chat:addMessage', playerId, {args: ['^2SUCCESS', msg]});
+    if (!msg) return false;
+
+    switch (playerId) {
+        case 0:
+            SuccessLog(msg);
+        break;
+        default:
+            emitNet('chat:addMessage', playerId, {args: ['^2SUCCESS', msg]});
+        break;
+    }
+
     return true;
 }
 
 function SendDebugMessage(playerId, msg) {
-    if (!playerId || !msg || !DebugLogsEnabled) return false;
-    emitNet('chat:addMessage', playerId, {args: ['^5DEBUG', msg]});
+    if (!msg) return false;
+
+    switch (playerId) {
+        case 0:
+            DebugLog(msg, true);
+        break;
+        default:
+            emitNet('chat:addMessage', playerId, {args: ['^5DEBUG', msg]});
+        break;
+    }
+
     return true;
 }
 
 onNet("Nightclubs:EnterRequest", async (clubString, EnterMethod) => {
+    if (IgnoringEntries) return;
+
     var source = global.source;
     DebugLog(`Nightclubs:EnterRequest: ${GetPlayerFullName(source)} requested entry...`);
     var club = JSON.parse(clubString);
     //RejectEnterRequest(source);
-    await AcceptEnterRequest(source, club, EnterMethod);
+    if (IsPlayerBannedFromNightclub(source, club.id)) {
+        RejectEnterRequest(source);
+    } else {
+        await AcceptEnterRequest(source, club, EnterMethod);
+    }
 });
 
 onNet("Nightclubs:ExitRequest", (clubString, Method) => {
@@ -1130,6 +1207,80 @@ function HOST_CMD(source, args) {
     
 }
 
+function ADMIN_CMD(source, args) {
+    if (args.length < 1) return SendErrorMessage(source, `Not enough arguments were specified.`);
+
+    switch (args[0].toLowerCase()) {
+        case 'reset':
+        case 'restart':
+            ExecuteCommand('restart ' + GetCurrentResourceName());
+        break;
+        case 'stop':
+            ExecuteCommand('stop ' + GetCurrentResourceName());
+        break;
+        case 'ignoreentry':
+        case 'ignoreentries':
+            if (IgnoringEntries) {
+                IgnoringEntries = false;
+            } else IgnoringEntries = true;
+
+            SendSuccessMessage(source, `IgnoringEntries = ${IgnoringEntries}`);
+        break;
+        case 'kick':
+            var Player = SearchPlayerFromCacheWithName(args.slice(1).join(" "));
+            if (!args[1]) {
+                return SendErrorMessage(source, `You didn't specify a player.`);
+            } else if (!Player) return SendErrorMessage(source, `No player results for: ${args.slice(1).join(" ")}`);
+            var club = GetNightclubPlayerIsIn(Player.id);
+            if (!club) return SendErrorMessage(source, `Player isn't in a nightclub.`);
+            
+            var Session = SessionsGetPlayer(Player.id, club.id);
+            if ((Date.now() - Session.enteredAt) <= 10000) return SendErrorMessage(source, `Exit cooldown active... try again later!`);
+
+            RunExitFunctions(Player.id, club, 1);
+            emitNet('Nightclubs:ExitNightClub', Player.id, JSON.stringify(club)); // "NightclubsKicked"
+            emitNet('Nightclubs:WarningMessage', Player.id, 'NightclubsAdminAlert', "NightclubsKicked_2", 2500);
+            SendSuccessMessage(source, `Player ${Player.fullName} kicked from nightclub ${club.id}`);
+        break;
+        case 'tempban':
+            if (isNaN(args[1])) {
+                return SendErrorMessage(source, `You didn't specify a valid player server id.`);
+            } else if (isNaN(args[2])) {
+                return SendErrorMessage(source, `You didn't specify a valid club id.`);
+            }
+
+            var parsed = parseInt(args[1]);
+            var parsed2 = parseInt(args[2]);
+
+            var club = GetNightclubPlayerIsIn(parsed);
+            if (club && club.id === parsed2) {
+                var Session = SessionsGetPlayer(parsed, club.id);
+                if ((Date.now() - Session.enteredAt) <= 10000) return SendErrorMessage(source, `Exit cooldown active... try again later!`);
+                
+                RunExitFunctions(parsed, club, 1); 
+                emitNet('Nightclubs:ExitNightClub', parsed, JSON.stringify(club));
+                emitNet('Nightclubs:WarningMessage', parsed, 'NightclubsAdminAlert', "NightclubsKicked_3", 2500);
+            }
+            TempBanPlayerFromNightclub(parsed, parsed2);
+            SendSuccessMessage(source, `Player ${parsed} temp banned from nightclub ${parsed2}`);           
+        break;
+        case 'unban':
+            if (isNaN(args[1])) {
+                return SendErrorMessage(source, `You didn't specify a valid player server id.`);
+            } else if (isNaN(args[2])) {
+                return SendErrorMessage(source, `You didn't specify a valid club id.`);
+            }
+            var parsed = parseInt(args[1]);
+            var parsed2 = parseInt(args[2]);
+
+            RemovePlayersSessionBan(parsed, parsed2);
+            SendSuccessMessage(source, `Player ${parsed} unbanned from nightclub ${parsed2}`); 
+        break;
+    }
+}
+
+RegisterCommand('clubsettings', ADMIN_CMD, true);
+RegisterCommand('clubset', ADMIN_CMD, true);
 RegisterCommand('clubhost', HOST_CMD);
 RegisterCommand('nightclubhost', HOST_CMD);
 RegisterCommand('club', CMD);
