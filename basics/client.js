@@ -472,4 +472,4 @@ RegisterCommand('godmode', (source) => {
         SetPlayerInvincible(PlayerId(), true);
         invincibilityOn();
     }
-});
+})
