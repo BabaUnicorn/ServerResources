@@ -1,8 +1,5 @@
 let wait = (ms) => new Promise(res => setTimeout(res, ms));
 
-let godmode = false
-let vgodmode = false
-
 RegisterNetEvent('playerJoining')
 on('playerJoining', (source) => {
     let name = GetPlayerName(global.source)
@@ -15,18 +12,9 @@ on('playerDropped', (reason) => {
 })
 
 RegisterCommand('tp', (source, args) => {
-    const GetPlayers = () => {
-        let t = []
-        
-        for (let i = 0; i < GetNumPlayerIndices(); i++) {
-            t.push(GetPlayerFromIndex(i))
-        }
-    
-        return t
-    }
-    
-    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
-    if(!idResult || idResult == null){
+    let iId = parseInt(args[0]);
+    let idResult = getPlayers().find(element => element == iId);
+    if(!idResult || idResult == null || iId != idResult){
         emitNet('louBasics:tpNoArgs', source);
     } else {
         let destCoords = GetEntityCoords(GetPlayerPed(idResult));
@@ -36,18 +24,9 @@ RegisterCommand('tp', (source, args) => {
 })
 
 RegisterCommand('get', (source, args) => {
-    const GetPlayers = () => {
-        let t = []
-        
-        for (let i = 0; i < GetNumPlayerIndices(); i++) {
-            t.push(GetPlayerFromIndex(i))
-        }
-    
-        return t
-    }
-    
-    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
-    if(!idResult || idResult == null){
+    let iId = parseInt(args[0]);
+    let idResult = getPlayers().find(element => element == iId);
+    if(!idResult || idResult == null || iId != idResult){
         emitNet('louBasics:getNoArgs', source);
     } else {
         let destCoords = GetEntityCoords(GetPlayerPed(source));
@@ -58,21 +37,12 @@ RegisterCommand('get', (source, args) => {
 }, true)
 
 RegisterCommand('kick', (source, args) => {
-    const GetPlayers = () => {
-        let t = []
-        
-        for (let i = 0; i < GetNumPlayerIndices(); i++) {
-            t.push(GetPlayerFromIndex(i))
-        }
-    
-        return t
-    }
-    
-    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let iId = parseInt(args[0]);
+    let idResult = getPlayers().find(element => element == iId);
     let kicker = GetPlayerName(source)
     let reasonArgs = args.slice(1).join(" ")
     let kickReason = `Kicked by ${kicker}: ` + reasonArgs;
-    if(!idResult || idResult == null || !reasonArgs || reasonArgs == null || reasonArgs == ''){
+    if(!idResult || idResult == null || iId != idResult || !reasonArgs || reasonArgs == null || reasonArgs == ''){
         emitNet('louBasics:kickNoArgs', source);
     } else {
         DropPlayer(idResult, kickReason);
@@ -80,19 +50,10 @@ RegisterCommand('kick', (source, args) => {
 }, true)
 
 RegisterCommand('dm', (source, args) => {
-    const GetPlayers = () => {
-        let t = []
-        
-        for (let i = 0; i < GetNumPlayerIndices(); i++) {
-            t.push(GetPlayerFromIndex(i))
-        }
-    
-        return t
-    }
-    
-    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let iId = parseInt(args[0]);
+    let idResult = getPlayers().find(element => element == iId);
     let msgContent = args.slice(1).join(" ");
-    if(!idResult || idResult == null || !msgContent || msgContent == null || msgContent == ''){
+    if(!idResult || idResult == null || iId != idResult || !msgContent || msgContent == null || msgContent == ''){
         emitNet('louBasics:dmNoArgs', source);
     } else {
         emitNet('louBasics:dmNotifRec', idResult, GetPlayerName(source), msgContent);
@@ -101,19 +62,10 @@ RegisterCommand('dm', (source, args) => {
 })
 
 RegisterCommand('vworld', (source, args) => {
-    const GetPlayers = () => {
-        let t = []
-        
-        for (let i = 0; i < GetNumPlayerIndices(); i++) {
-            t.push(GetPlayerFromIndex(i))
-        }
-    
-        return t
-    }
-    
-    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let iId = parseInt(args[0]);
+    let idResult = getPlayers().find(element => element == iId);
     let targetWorld = parseInt(args[1])
-    if(!idResult || idResult == null || !targetWorld || targetWorld == null){
+    if(!idResult || idResult == null || iId != idResult || !targetWorld || targetWorld == null){
         SetPlayerRoutingBucket(source, 0);
         emitNet('louBasics:vworldNoArgs', source);
     } else {
@@ -123,19 +75,10 @@ RegisterCommand('vworld', (source, args) => {
 }, true)
 
 RegisterCommand('warn', async (source, args) => {
-    const GetPlayers = () => {
-        let t = []
-        
-        for (let i = 0; i < GetNumPlayerIndices(); i++) {
-            t.push(GetPlayerFromIndex(i))
-        }
-    
-        return t
-    }
-    
-    let idResult = GetPlayers().find(element => element == parseInt(args[0]));
+    let iId = parseInt(args[0]);
+    let idResult = getPlayers().find(element => element == iId);
     let warningMsg = args.slice(1).join(' ');
-    if(!idResult || idResult == null || !warningMsg || warningMsg == ''){
+    if(!idResult || idResult == null || iId != idResult || !warningMsg || warningMsg == ''){
         emitNet('louBasics:warningNoArgs', source)
     } else {
         emitNet('louBasics:warningMsg', idResult, warningMsg)
