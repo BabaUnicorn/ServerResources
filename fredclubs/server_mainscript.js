@@ -12,8 +12,9 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1,
-        nearbyZone: 50, 
+        nearbyZone: 70, 
         djLightsStyle: 2, // 1-16
         interiorStyle: 1, // 1-4
         djStyle: 4, //1-4, which dj posters should be on the walls
@@ -30,11 +31,14 @@ var NightClubs = [
             'Int01_ba_security_upgrade',
             'Int01_ba_lightgrid_01',
             'Int01_ba_clubname_01',
-            'light_rigs_off'
+            //'light_rigs_off'
         ],
         IplLoadOnStartup: [
             'ba_barriers_case7', 
-            'ba_case7_madonna' // ba_case7_taleofus, ba_case7_dixon, ba_case7_taleofus
+            'ba_case7_madonna', // ba_case7_taleofus, ba_case7_dixon, ba_case7_taleofus, ba_case7_solomun
+            'ba_case7_taleofus',
+            'ba_case7_dixon',
+            'ba_case7_solomun'
         ],
         IplUnloadOnStartup: null
     },
@@ -51,6 +55,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1,
         nearbyZone: 100, 
         djLightsStyle: 16, // 1-16
@@ -72,7 +77,10 @@ var NightClubs = [
         ],
         IplLoadOnStartup: [
             'ba_barriers_case6',
-            'ba_case6_dixon'
+            'ba_case6_dixon',
+            'ba_case6_madonna',
+            'ba_case6_taleofus',
+            'ba_case6_solomun'
         ],
         IplUnloadOnStartup: null
     },
@@ -89,6 +97,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1,
         nearbyZone: 50, 
         djLightsStyle: 10, // 1-16
@@ -111,6 +120,9 @@ var NightClubs = [
         ],
         IplLoadOnStartup: [
             'ba_case9_taleofus',
+            'ba_case9_madonna',
+            'ba_case9_dixon',
+            'ba_case9_solomun',
             'ba_barriers_case9'
         ],
         IplUnloadOnStartup: null,
@@ -132,6 +144,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1,
         nearbyZone: 50, 
         djLightsStyle: 10, // 1-16
@@ -154,7 +167,10 @@ var NightClubs = [
         ],
         IplLoadOnStartup: [
             'ba_barriers_case4',
-            'ba_case4_madonna'
+            'ba_case4_madonna',
+            'ba_case4_dixon',
+            'ba_case4_solomun',
+            'ba_case4_taleofus'
         ],
         IplUnloadOnStartup: null
     },
@@ -171,6 +187,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 0.65,
         nearbyZone: 50, 
         djLightsStyle: 13, // 1-16
@@ -193,7 +210,10 @@ var NightClubs = [
         ],
         IplLoadOnStartup: [
             'ba_barriers_case1',
-            'ba_case1_dixon'
+            'ba_case1_taleofus',
+            'ba_case1_madonna',
+            'ba_case1_dixon',
+            'ba_case1_solomun',
         ],
         IplUnloadOnStartup: [
             'ba_case1_forsale'
@@ -212,6 +232,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 0.48,
         nearbyZone: 50, 
         djLightsStyle: 9, // 1-16
@@ -233,6 +254,9 @@ var NightClubs = [
         ],
         IplLoadOnStartup: [
             'ba_case0_madonna',
+            'ba_case0_dixon',
+            'ba_case0_solomun',
+            'ba_case0_taleofus',
             'ba_barriers_case0'
         ],
         IplUnloadOnStartup: null
@@ -250,6 +274,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1,
         nearbyZone: 100, 
         djLightsStyle: 10, // 1-16
@@ -272,6 +297,9 @@ var NightClubs = [
         ],
         IplLoadOnStartup: [
             'ba_case2_taleofus',
+            'ba_case2_solomun',
+            'ba_case2_madonna',
+            'ba_case2_dixon',
             'ba_barriers_case2'
         ],
         IplUnloadOnStartup: [
@@ -291,6 +319,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1.5,
         nearbyZone: 50, 
         djLightsStyle: 1, // 1-16
@@ -311,7 +340,10 @@ var NightClubs = [
             'DJ_04_Lights_04'
         ],
         IplLoadOnStartup: [
+            'ba_case5_madonna',
+            'ba_case5_dixon',
             'ba_case5_solomun',
+            'ba_case5_taleofus',
             'ba_barriers_case5'
         ],
         IplUnloadOnStartup: null
@@ -329,6 +361,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1,
         nearbyZone: 70, 
         djLightsStyle: 2, // 1-16
@@ -349,7 +382,10 @@ var NightClubs = [
             'DJ_01_Lights_04'
         ],
         IplLoadOnStartup: [
-            'ba_barriers_case8',
+            'ba_case8_madonna',
+            'ba_case8_dixon',
+            'ba_case8_solomun',
+            'ba_case8_taleofus',
             'ba_case8_solomun'
         ],
         IplUnloadOnStartup: null,
@@ -376,6 +412,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: null,
+        markerLightEnabled: false,
         enterZone: 1,
         nearbyZone: 50, 
         djLightsStyle: 1, // 1-16
@@ -398,7 +435,10 @@ var NightClubs = [
             'Int01_ba_clubname_07'
         ],
         IplLoadOnStartup: [
-            'ba_barriers_case3',
+            'ba_case3_madonna',
+            'ba_case3_dixon',
+            'ba_case3_solomun',
+            'ba_case3_taleofus',
             'ba_case3_madonna'
         ],
         IplUnloadOnStartup: null
@@ -416,6 +456,7 @@ var NightClubs = [
         blipColor: null,
         blipSprite: null,
         markerColor: [0, 90, 199, 150],
+        markerLightEnabled: false,
         enterZone: 1,
         nearbyZone: 40, 
         djLightsStyle: null, // 1-16
@@ -813,8 +854,12 @@ async function AcceptEnterRequest(source, club, EnterMethod) {
     AddPlayerToNightclubSession(source, club);
     if (!GetSessionHost(club.id)) DetermineSessionHost(club.id);
 
+    var MiscData = {
+        PlayerCount: SessionsGetPlayers(club.id).length,
+        PlayerIsHost: !!GetSessionHost(club.id) && GetSessionHost(club.id).id === source ? true : false
+    }
     var Players = GetPlayersFromNightclubsExcluding(club.id);
-    emitNet("Nightclubs:EnterRequestAccepted", source, JSON.stringify(Players), EnterMethod);
+    emitNet("Nightclubs:EnterRequestAccepted", source, JSON.stringify(Players), EnterMethod, JSON.stringify(MiscData));
     var Time = 0;
     Players.forEach(async p => {
         DebugLog(`AcceptEnterRequest: Sending request to hide ${source} ${GetPlayerFullName(source)} (player who just entered) to player ${p.id} (${GetPlayerFullName(p.id)})`);
@@ -1046,6 +1091,7 @@ function CMD(source, args) {
             emitNet('Nightclubs:Toggle', source);
         break;
         case 'list':
+        case 'view':
             var Fields = [];
             Sessions.forEach(async session => {
                 Fields.push({
