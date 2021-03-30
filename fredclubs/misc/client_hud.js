@@ -2,10 +2,12 @@ AddTextEntry("Nightclubs", "Nightclubs");
 AddTextEntry("NightclubsInformation", "Information");
 AddTextEntry("NightclubsBlipName_1", "Nightclub");
 AddTextEntry("NightclubsBlipName_2", "Current nightclub (~a~)");
+AddTextEntry("NightclubsBlipName_3", "Garage entrance");
 AddTextEntry("NightclubsNearbyClubHelpText", "...");
 AddTextEntry("NightclubsNearbyClubExitHelpText", "...");
 AddTextEntry("NightclubsServerTakingTooLongWarningMessageBody", "The server is taking too long to respond... would you like to try again?");
-AddTextEntry("NightclubsWelcomeFeedPost", "Enjoy your stay!");
+AddTextEntry("NightclubsWelcomeFeedPost", "There are ~p~~a~ ~w~other players in this nightclub. Enjoy your stay!");
+AddTextEntry("NightclubsChosenAsHost", "You have been set as the club's host. You can view your commands by using /clubhost help.");
 AddTextEntry("NightclubsOutOfInterior", "You have been removed from the nightclub automatically because you left the interior's bounds. Feel free to re-enter from the exterior.");
 AddTextEntry("NightclubsToggled", "Clubs are now ~a~. Type ~p~/clubs toggle ~w~to undo.");
 AddTextEntry("NightclubsInviteReceived", "You have been invited to a Nightclub. Type ~h~/club accept ~a~~h~ to accept this invite. Type ~h~/club invites~h~ to view all invites.");
@@ -15,7 +17,7 @@ AddTextEntry("NightclubsSessionHostTransferred", "You have been set as the sessi
 AddTextEntry("NightclubsKicked", "You have been kicked from the nightclub by its current host.");
 AddTextEntry("NightclubsKicked_2", "You have been kicked from the nightclub.");
 AddTextEntry("NightclubsKicked_3", "You have been temporarily banned from the nightclub.");
-AddTextEntry('NightclubsAdminAlert', "~r~ALERT");
+AddTextEntry("NightclubsAdminAlert", "~r~ALERT");
 AddTextEntry("NightclubsVehicleDeleted", "Your vehicle has been deleted.");
 AddTextEntry("NightclubsHelpBody", `Nightclubs are located all over Los Santos. `+
 `You can easily find them by checking your Pause Menu map. Once you're near a Club, go inside one of its markers and press ~h~[E]~h~ to enter.`+
@@ -36,13 +38,13 @@ AddTextEntry("NightclubsHelpBody_Host", `~p~/clubhost set [player name] ~w~- Mak
 `~p~/clubhost help ~w~- Shows this screen\n`+
 `~HUD_COLOUR_GREY~Note: Leaving the nightclub will remove you as the host and choose someone else.`);
 
-var MyName = GetCurrentResourceName();
+var MyName = GetThisScriptName();
 var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : DrawTickRate));
 var ClubBlips = [];
 var InteriorBlips = []
 var DrawTickRate = 3;
 var LoadingScreenActive = false;
-var DebugLogsEnabled = true;
+var DebugLogsEnabled = false;
 var CurrentClubBlip = null;
 var ClubsDefaultBlipColour = 0;
 var ClubsDefaultBlipScale = 1;
@@ -50,6 +52,11 @@ var ExitBlip = null;
 var GarageBlip = null;
 var NightclubsTxd = CreateRuntimeTxd('script_nightclubs');
 var ArtificialLightsState = false;
+var ExitMenuIsActive = false;
+var PopupIsActive = false;
+var ScoreboardIsActive = false;
+var BigfeedIsActive = false;
+var Scoreboard_2IsActive = false;
 
 function DebugLog(text, bypass) {
     if (DebugLogsEnabled || bypass) {
@@ -97,7 +104,7 @@ function PrepareImageForThefeedIcon(url, width, height, txn) {
 function SetGarageBlip() {
     GarageBlip = AddBlipForCoord(-1643.954956054, -2989.80908203125, -76.78476189208984);
     SetBlipSprite(GarageBlip, 357);
-    SetBlipScale(GarageBlip, 1.2);
+    SetBlipScale(GarageBlip, 1.1);
 	SetBlipAsInterior(GarageBlip);
 
     DebugLog(`Added garage exit blip: ${GarageBlip}`);
@@ -161,6 +168,7 @@ function SetBlipForClub (clubInfo) {
     SetBlipColour(Blip, clubInfo.blipColor || ClubsDefaultBlipColour);
     SetBlipScale(Blip, ClubsDefaultBlipScale);
     SetBlipAsShortRange(Blip, true);
+	SetBlipAsMissionCreatorBlip(Blip, true);
     BeginTextCommandSetBlipName(clubInfo.blipTextLabel ? clubInfo.blipTextLabel : "NightclubsBlipName_1");
     EndTextCommandSetBlipName(Blip);
 
@@ -170,7 +178,7 @@ function SetBlipForClub (clubInfo) {
     return Blip;
 }
 
-async function SetClubBlips (Clubs) {
+async function SetClubBlips(Clubs) {
     if (!Clubs) return false;
 
     Clubs.forEach(async c => {
@@ -181,7 +189,7 @@ async function SetClubBlips (Clubs) {
     return true;
 }
 
-function RemoveClubBlips () {
+function RemoveClubBlips() {
     ClubBlips.forEach(async club => {
         RemoveBlip(club);
         DebugLog(`Removing club blip ${club}`);
@@ -190,7 +198,7 @@ function RemoveClubBlips () {
     ClubBlips.length = 0;
 }
 
-async function StartupLoadingScreen () {
+async function StartupLoadingScreen() {
     SwitchOutPlayer(PlayerPedId(), 289263, 2);
     //SwitchOutPlayer(PlayerPedId(), 7373, 2);
     DisplayRadar(false);
@@ -203,16 +211,16 @@ async function StartupLoadingScreen () {
     DebugLog(`Loading screen started`);
     LoadingScreenActive = true;
 
-	while (LoadingScreenActive) {
+	/*while (LoadingScreenActive) {
 		SetMouseCursorActiveThisFrame();
-		/*DisableControlAction(0, 24, true); // attack
+		DisableControlAction(0, 24, true); // attack
 		DisableControlAction(0, 25, true); // aim
 		DisableControlAction(0, 1, true); // camera movement left right
 		DisableControlAction(0, 2, true); // camera movement left right
-		DisableControlAction(0, 257, true); // attack2*/
+		DisableControlAction(0, 257, true); // attack2
 
 		await Wait(0);
-	}
+	}*/
 }
 
 function StopLoadingScreen () {
@@ -267,7 +275,7 @@ function GetClubTxd(clubId) {
 	}
 }
 
-function ScaleformMouse (EnableRot = false, RotSpeed = 2) {
+function ScaleformMouse(EnableRot = false, RotSpeed = 2) {
 	SetMouseCursorActiveThisFrame();
 	
 	DisableControlAction(0, 24, true); // attack
@@ -279,6 +287,7 @@ function ScaleformMouse (EnableRot = false, RotSpeed = 2) {
 	DisableControlAction(0, 257, true);
 
 	if (EnableRot) {
+		var MouseSprite = 0;
 		var CamHeading = GetGameplayCamRelativeHeading();
 		var CursorX = GetDisabledControlNormal(0, 239);
 		var CursorY = GetDisabledControlNormal(0, 240);
@@ -300,11 +309,16 @@ function ScaleformMouse (EnableRot = false, RotSpeed = 2) {
 			CamHeading = CamHeading - RotSpeed;
 			DisableControlAction(0, 26);
 			SetGameplayCamRelativeHeading(CamHeading);
-		} else if (MouseSprite !== 0) {
+		} else {
 			MouseSprite = 0;
 			SetMouseCursorSprite(0);
 		}
 	}
+}
+
+function IsAnyScaleformActive() {
+	if (ScoreboardIsActive || BigfeedIsActive || Scoreboard_2IsActive) return true;
+	return false;
 }
 
 async function AddTextComponentsFromArray (Arr) {
@@ -329,13 +343,86 @@ async function AddTextComponentsFromArray (Arr) {
 	}
 }
 
-async function PopupMessage (Header = 'alert', BodyText1 = '...', BodyText2 = '...', WaitBeforeAllowingConfirm = 0, ButtonText = GetLabelText('IB_OK'), EnableMouse = true, UseTextEntries = false, HeaderTextComponents, BodyTextComponents, BodyText2Components) {
+async function ActivateExitMenu() {
+	if (IsExitMenuActive()) return false;
+
+	DebugLog(`ActivateExitMenu: Called`);
+
+	RequestStreamedTextureDict('commonmenu');
+	var Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
+	while (!HasStreamedTextureDictLoaded('commonmenu') || !HasScaleformMovieLoaded(Button)) {
+		await Wait(0);
+	}
+
+	ExitMenuIsActive = true;
+	//SetCursorLocation(0.5, 0.5);
+
+	BeginScaleformMovieMethod(Button, 'CLEAR_ALL');
+	EndScaleformMovieMethod();
+
+	BeginScaleformMovieMethod(Button, "SET_DATA_SLOT");
+	ScaleformMovieMethodAddParamInt(0);
+	ScaleformMovieMethodAddParamPlayerNameString("~INPUT_FRONTEND_ACCEPT~");
+	BeginTextCommandScaleformString('IB_SELECT');
+	EndTextCommandScaleformString();
+	EndScaleformMovieMethod();
+
+	BeginScaleformMovieMethod(Button, 'DRAW_INSTRUCTIONAL_BUTTONS');
+	EndScaleformMovieMethod();
+
+	var KeepLoop = true;
+	function StopDisplaying() {
+		KeepLoop = false;
+		SetStreamedTextureDictAsNoLongerNeeded('commonmenu');
+		BeginScaleformMovieMethod(Button, 'CLEAR_ALL');
+		EndScaleformMovieMethod();
+		SetScaleformMovieAsNoLongerNeeded(Button);
+		PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_MP_SOUNDSET");
+		ExitMenuIsActive = false;
+		DebugLog(`ActivateExitMenu: Removed`);
+	}
+
+	on("Nightclubs:RemoveExitMenu", () => {
+		StopDisplaying();
+	});
+
+	while (KeepLoop) {
+		var x = 0.5;
+		var y = 0.2;
+		if (!IsAnyScaleformActive()) {
+			DrawSprite('commonmenu', 'interaction_bgd', x, y, 0.25, 0.035, 0, 0, 0, 0, 255);
+			DrawSprite('commonmenu', 'gradient_nav', x, y + 0.035, 0.25, 0.035, 0, 255, 255, 255, 210);
+			DrawMenu2dText(x - 0.12, y - 0.015, "NIGHTCLUB", null, 0.4, 255, 255, 255, 255, false); // x - 0.12, y - 0.015
+			DrawMenu2dText(x - 0.067, y + 0.017, "Exit this Nightclub", null, 0.4, 2, 2, 2, 255, true); // x - 0.067, y + 0.01
+			DrawScaleformMovieFullscreen(Button, 255, 255, 255, 255, 0);
+			DisableControlAction(2, 200, true);
+			ScaleformMouse(false);
+			/*if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 237)) {
+				StopDisplaying();
+			}*/
+		}
+		await Wait();
+	}
+}
+
+function RemoveExitMenu() {
+	emit("Nightclubs:RemoveExitMenu");
+}
+
+function IsExitMenuActive() {
+	return ExitMenuIsActive;
+}
+
+async function PopupMessage(Header = 'alert', BodyText1 = '...', BodyText2 = '...', WaitBeforeAllowingConfirm = 0, ButtonText = GetLabelText('IB_OK'), EnableMouse = true, UseTextEntries = false, HeaderTextComponents, BodyTextComponents, BodyText2Components) {
+	DebugLog(`PopupMessage: Called`);
 	var Popup_Body = RequestScaleformMovie("POPUP_WARNING"),
 	Popup_Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
 	while (!HasScaleformMovieLoaded(Popup_Body) || !HasScaleformMovieLoaded(Popup_Button)) { 
 		await Wait(100); 
 	}
  
+	PopupIsActive = true;
+
 	DebugLog(`Popup_Body=${Popup_Body} Popup_Button=${Popup_Button}`);
 
 	(function SetupBody () {
@@ -377,11 +464,13 @@ async function PopupMessage (Header = 'alert', BodyText1 = '...', BodyText2 = '.
 	var KeepDisplaying = true;
 	function StopDisplaying () {
 		KeepDisplaying = false;
+		PoopupIsActive = false;
 		SetScaleformMovieAsNoLongerNeeded(Popup_Body);
 		BeginScaleformMovieMethod(Popup_Button, "CLEAR_ALL");
 		EndScaleformMovieMethod();
 		SetScaleformMovieAsNoLongerNeeded(Popup_Button);
 		PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_MP_SOUNDSET");
+		DebugLog(`PopupMessage: Removed`);
 	}
  
 
@@ -389,11 +478,11 @@ async function PopupMessage (Header = 'alert', BodyText1 = '...', BodyText2 = '.
 	while (KeepDisplaying) {
 		var CurrentTime = Date.now()
 
-		DrawScaleformMovieFullscreen(Popup_Body, 255, 255, 255, 255, 0)
-		DrawScaleformMovieFullscreen(Popup_Button, 255, 255, 255, 255, 0)
+		DrawScaleformMovieFullscreen(Popup_Body, 255, 255, 255, 255, 0);
+		DrawScaleformMovieFullscreen(Popup_Button, 255, 255, 255, 255, 0);
  
 		HideHudAndRadarThisFrame();
-		DisableControlAction(2, 200);
+		DisableControlAction(2, 200, true);
  
 		if (EnableMouse) ScaleformMouse();
 
@@ -410,11 +499,14 @@ async function PopupMessage (Header = 'alert', BodyText1 = '...', BodyText2 = '.
 }
 
 async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingConfirm = 0, ButtonText = 'OK', EnableMouse = true) {
+	DebugLog(`Scoreboard: Called`);
 	var ScoreBoard = RequestScaleformMovie("MP_ONLINE_LIST_CARD"),
 	Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
     while (!HasScaleformMovieLoaded(ScoreBoard) || !HasScaleformMovieLoaded(Button)) {
         await Wait();
     }
+
+	ScoreboardIsActive = true;
 
     BeginScaleformMovieMethod(ScoreBoard, "SET_TITLE");
     PushScaleformMovieFunctionParameterString(Title);
@@ -464,6 +556,8 @@ async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingC
 		EndScaleformMovieMethod();
 		SetScaleformMovieAsNoLongerNeeded(Button);
 		KeepDisplaying = false;
+		ScoreboardIsActive = false;
+		DebugLog(`Scoreboard: Removed`);
 	}
 
 	var StartedDrawing = Date.now();
@@ -477,7 +571,7 @@ async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingC
 			ScaleformMouse();
 		}
 
-		DisableControlAction(2, 200);
+		DisableControlAction(2, 200, true);
 
 		if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 202) || IsControlJustReleased(2, 238) || IsControlJustReleased(2, 237)) {
 			if ((CurrentTime - StartedDrawing) >= WaitBeforeAllowingConfirm) {
@@ -492,12 +586,15 @@ async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingC
 }
 
 async function Bigfeed (Title = ' ', Subtitle = '', Body = '', txd, txn, WaitBeforeAllowingConfirm = 0, ButtonText = 'OK', MouseEnabled = true, UseTextLabels, TitleTextComponents, SubtitleTextComponents, BodyTextComponents) {
+	DebugLog(`Bigfeed: Called`);
 	var BigFeed = RequestScaleformMovie('GTAV_ONLINE'),
 	Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
 
 	while (!HasScaleformMovieLoaded(BigFeed) || !HasScaleformMovieLoaded(Button)) {
 		await Wait(30);
 	}
+
+	BigfeedIsActive = true;
 
 	BeginScaleformMovieMethod(BigFeed, "SETUP_BIGFEED");
 	ScaleformMovieMethodAddParamBool(false);
@@ -572,14 +669,16 @@ async function Bigfeed (Title = ' ', Subtitle = '', Body = '', txd, txn, WaitBef
 	EndScaleformMovieMethod();
 
 	var KeepDisplaying = true;
-	function StopDisplaying () {
+	function StopDisplaying() {
 		KeepDisplaying = false;
+		BigfeedIsActive = false;
 		BeginScaleformMovieMethod(Button, "CLEAR_ALL");
 		EndScaleformMovieMethod();
 		SetScaleformMovieAsNoLongerNeeded(Button);
 		SetScaleformMovieAsNoLongerNeeded(BigFeed);
 		SetStreamedTextureDictAsNoLongerNeeded(txd);
 		PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_MP_SOUNDSET");
+		DebugLog(`Bigfeed: Removed`);
 	}
 
 	var StartedDrawing = Date.now();
@@ -659,11 +758,14 @@ Scoreboard_2_DefaultButtons = [
 	}
 ];
 async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Slots = Scoreboard_2_DefaultSlots, WaitBeforeAllowingConfirm = 0, Buttons = Scoreboard_2_DefaultButtons, EnableMouse = true) {
+	DebugLog(`Scoreboard_2: Called`);
 	var Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
 	var Scaleform = RequestScaleformMovie('SC_LEADERBOARD');
 	while (!HasScaleformMovieLoaded(Button) || !HasScaleformMovieLoaded(Scaleform)) {
 		await Wait();
 	}
+
+	Scoreboard_2IsActive = true;
 
 	(function SetupButton () {
 		BeginScaleformMovieMethod(Button, "CLEAR_ALL");
@@ -736,11 +838,13 @@ async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Sl
 		if (IsControlJustReleased(2, 201) || IsControlJustReleased(2, 202) || IsControlJustReleased(0, 238) || IsControlJustReleased(0, 237)) {
 			if (CurrentTime - StartedDrawing >= WaitBeforeAllowingConfirm) {
 				KeepDisplaying = false;
+				Scoreboard_2IsActive = false;
 				BeginScaleformMovieMethod(Button, "CLEAR_ALL");
 				EndScaleformMovieMethod();
 				SetScaleformMovieAsNoLongerNeeded(Button);
 				SetScaleformMovieAsNoLongerNeeded(Scaleform);
 				PlaySoundFrontend(-1, 'BACK', 'HUD_FRONTEND_DEFAULT_SOUNDSET');
+				DebugLog(`Scoreboard_2: Removed`);
 			} else {
 				PlaySoundFrontend(-1, 'ERROR', 'HUD_FRONTEND_DEFAULT_SOUNDSET');
 			}
@@ -748,6 +852,59 @@ async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Sl
  
 		await Wait();
 	}
+}
+
+async function FrontendBlipInfo(title = 'title here', txd = 'club_delperro', txn = 'club_ext', slots = [{
+	leftText: 'leftText', rightText: 'rightText', icon: 0, iconHudColor: 6
+}]) {
+	DebugLog(`FrontendBlipInfo: Called`);
+
+	var Index = -1;
+	slots.forEach(async slot => {
+		Index += 1;
+
+		BeginScaleformMovieMethodOnFrontend("SET_DATA_SLOT");
+		ScaleformMovieMethodAddParamInt(slot.state || 1);
+		ScaleformMovieMethodAddParamInt(Index);
+		ScaleformMovieMethodAddParamInt(65);
+		ScaleformMovieMethodAddParamInt(3);
+		ScaleformMovieMethodAddParamInt(2);
+		ScaleformMovieMethodAddParamInt(0);
+		ScaleformMovieMethodAddParamInt(1);
+		ScaleformMovieMethodAddParamPlayerNameString(slot.leftText || '');
+		ScaleformMovieMethodAddParamPlayerNameString(slot.rightText || '');
+		ScaleformMovieMethodAddParamInt(slot.icon || -1); //icon
+		ScaleformMovieMethodAddParamInt(slot.iconHudColor || 0); //color
+		ScaleformMovieMethodAddParamBool(slot.ticked ? true : false);
+		EndScaleformMovieMethod();
+
+		await Wait(2);
+	});
+
+    BeginScaleformMovieMethodOnFrontend("SET_COLUMN_TITLE");
+    ScaleformMovieMethodAddParamInt(1);
+    ScaleformMovieMethodAddParamPlayerNameString('ehehe');
+    ScaleformMovieMethodAddParamPlayerNameString(title);
+    ScaleformMovieMethodAddParamInt(0);
+    ScaleformMovieMethodAddParamTextureNameString(txd);
+    ScaleformMovieMethodAddParamTextureNameString(txn);
+    ScaleformMovieMethodAddParamPlayerNameString('');
+    ScaleformMovieMethodAddParamInt(0);
+    ScaleformMovieMethodAddParamPlayerNameString('');
+    ScaleformMovieMethodAddParamPlayerNameString('');
+    EndScaleformMovieMethod();
+
+	BeginScaleformMovieMethodOnFrontend("DISPLAY_DATA_SLOT");
+	ScaleformMovieMethodAddParamInt(1);
+    EndScaleformMovieMethod();
+}
+
+function RemoveFrontendBlipInfo() {
+	BeginScaleformMovieMethodOnFrontend('SET_DATA_SLOT_EMPTY');
+	ScaleformMovieMethodAddParamInt(1);
+	EndScaleformMovieMethod();
+
+	return true;
 }
 
 async function WarningMessage(HeaderTextLabel, BodyTextLabel = 'NightclubsServerTakingTooLongWarningMessageBody', MsLock = 0, Background) {
@@ -768,6 +925,18 @@ async function WarningMessage(HeaderTextLabel, BodyTextLabel = 'NightclubsServer
 
 		await Wait();
 	}
+}
+
+function DrawMenu2dText (x, y, text, textFont, scale, r, g, b, a, center) {
+	if (textFont) SetTextFont(textFont);
+	SetTextScale(scale, scale);
+	if (r && g && b && a) SetTextColour(r, g, b, 255);
+	//SetTextEdge(4, 0, 0, 0, 255)
+	SetTextCentre(center)
+	BeginTextCommandDisplayText(`STRING`);
+	AddTextComponentSubstringPlayerName(text)
+	EndTextCommandDisplayText(x, y);
+	//DebugLog(`Draw2DText`);
 }
 
 function BasicThefeedPost(text, bgColor) {
@@ -813,6 +982,7 @@ async function InviteNotification(PlayerInfo, ClubInfo, InviteId) {
 
 	BeginTextCommandThefeedPost('NightclubsInviteReceived');
 	AddTextComponentSubstringPlayerName(String(InviteId));
+	ThefeedSetAnimpostfxSound(true);
 	EndTextCommandThefeedPostMessagetext(txd, txn, true, 2, PlayerInfo.name, ClubInfo.name);
 	if (txn === 'club_ext') SetStreamedTextureDictAsNoLongerNeeded(txd);
 }
@@ -836,3 +1006,18 @@ RegisterCommand('nightclubs::scoreboard_2debug', () => Scoreboard_2())
 RegisterCommand('nightclubs::scoreboarddebug', () => Scoreboard());
 RegisterCommand('nightclubs::warningmessagedebug', () => WarningMessage());
 RegisterCommand('nightclubs::popupmessagedebug', () => PopupMessage());
+RegisterCommand('nightclubs::frontendblipinfodebug', () => FrontendBlipInfo());
+var SafezoneShown = false;
+RegisterCommand('nightclubs::safezone', async () => {
+	if (SafezoneShown) {
+		SafezoneShown = false;
+	} else {
+		SafezoneShown = true;
+		while (SafezoneShown) {
+			var Size = GetSafeZoneSize();
+			DrawRect(0.5, 0.5, Size, Size, 0, 0, 0, 100);
+			await Wait(0);
+		}
+	}
+
+});
