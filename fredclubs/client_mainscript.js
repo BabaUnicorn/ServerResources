@@ -1,13 +1,15 @@
 var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : TickRate));
 var ClubsEnabled = true;
-var DefaultTickRate = 3.5;
+var DefaultTickRate = 0;
+var SlowmodeTickrate = 5000;
 var TickRate = DefaultTickRate;
 var PedId = PlayerPedId();
 var PedIdUpdateTickFrequency = 100; // every 100 ticks
 var PedIdUpdateTickCount = 0;
+var PlayerId_ = PlayerId();
 var PlayerPedCoords = GetEntityCoords(PedId);
 var PlayerPedCoordsUpdateTickCount = 0;
-var PlayerPedCoordsUpdateTickFrequency = 99;
+var PlayerPedCoordsUpdateTickFrequency = 150;
 var CurrentInteriorCheckTickCount = 0;
 var CurrentInteriorCheckTickFrequency = 200;
 var BlipInfoCheckTickCount = 0;
@@ -24,6 +26,7 @@ var InsideClub = null;
 var CurrentClubData = null;
 var EnteringClub = null;
 var ExitingClub = null;
+var ExitMenuEnabled = false;
 var LastClub = null;
 var LastClub2 = null;
 var LastClub3 = null;
@@ -53,7 +56,7 @@ AddTextEntry("NightclubsNearbyClubExitHelpText", `Press ${EnterControlButton} to
 
 function SetTickRate(tickRate) {
     TickRate = (tickRate ? tickRate : DefaultTickRate);
-    DebugLog(`$Current tick rate: ${TickRate}`);
+    DebugLog(`Current tick rate: ${TickRate}`, true);
     return TickRate;
 }
 
@@ -100,7 +103,9 @@ function UpdateReceivedNightclubs() {
     DebugLog(`Ready, received ${NightClubs.length} clubs`, true);
     BusyspinnerOff();
 
-    if (ClubsEnabled) SetClubBlips(NightClubs);
+    if (ClubsEnabled) {
+        SetClubBlips(NightClubs);
+    } else SetTickRate(SlowmodeTickrate);
 
     function SetCooldown(code, time) {
         if (!code || !time) return false;
@@ -272,7 +277,7 @@ function UpdateReceivedNightclubs() {
                 if (club.garageEntryCoords) {
                     DrawLightWithRange(club.garageEntryCoords[0], club.garageEntryCoords[1], club.garageEntryCoords[2], color[0], color[1], color[2], 5, 1.3);
                 }
-                await Wait(4);
+                await Wait();
             }
         }
     }
@@ -602,11 +607,14 @@ function UpdateReceivedNightclubs() {
                 AddTextComponentSubstringPlayerName(String(CurrentClubData.MiscData.PlayerCount - 1));
                 EndTextCommandThefeedPostMessagetext(`CHAR_SOCIAL_CLUB`, `CHAR_SOCIAL_CLUB`, true, 0, "Nightclubs", extra.name);
 
-                if (CurrentClubData.MiscData.PlayerIsHost) {
-                   // ThefeedNextPostBackgroundColor(21);
+                if (CurrentClubData.MiscData && CurrentClubData.MiscData.PlayerIsHost) {
                     BeginTextCommandDisplayHelp("NightclubsChosenAsHost");
                     EndTextCommandDisplayHelp(0, false, true, -1);
                     SetHelpMessageTextStyle(3, 21, 160, 0, 0);
+                } else {
+                    BeginTextCommandDisplayHelp("NightclubsErrorMiscData");
+                    EndTextCommandDisplayHelp(0, false, true, -1);
+                    SetHelpMessageTextStyle(3, 6, 160, 0, 0);                   
                 }
             break;
         }
@@ -628,9 +636,9 @@ function UpdateReceivedNightclubs() {
             return false;
         } else if ((Coords && Radius) && (Get3dDistance(pedCoords[0], pedCoords[1], pedCoords[2], Coords[0], Coords[1], Coords[2]) > Radius)) {
             return false;
-        } else if (GetPlayerWantedLevel(PlayerId()) > 0) {
+        } else if (GetPlayerWantedLevel(PlayerId_) > 0) {
             return false; 
-        } else if (IsPedDeadOrDying(PedId)) {
+        } else if (!IsPlayerPlaying(PlayerId_)) {
             return false;
         } else if (!IsPedOnFoot(PedId)) {
             return false;
@@ -725,7 +733,8 @@ function UpdateReceivedNightclubs() {
         LastClub = null;
         LastClub2 = null;
         CurrentInteriorCheckTickCount = 0;
-        SetPlayerControl(PlayerId(), false);
+
+        SetPlayerControl(PlayerId_, false);
 
         RemoveExitMenu();
         //DeleteCheckpoint(ExitCheckpoint);
@@ -791,20 +800,20 @@ function UpdateReceivedNightclubs() {
         DebugLog(`Club.pedHeading_Garage = ` + Club.pedHeading_Garage);
         DebugLog(`Club.pedHeading = ${Club.pedHeading}`);
         DebugLog(`ExitedVia = ${ExitedVia}`);
-        //SetEntityHeading(PedId, Heading);
         //SetGameplayCamRelativeHeading(0);
 
-        StartPlayerTeleport(PlayerId(), ExitCoords[0], ExitCoords[1], ExitCoords[2], Heading, true, true, true);
-        while (!HasPlayerTeleportFinished(PlayerId())) {
-            await Wait(500);
+        StartPlayerTeleport(PlayerId_, ExitCoords[0], ExitCoords[1], ExitCoords[2], Heading, true, true, true);
+        while (!HasPlayerTeleportFinished(PlayerId_)) {
+            await Wait(50);
         }
 
         ExitingClub = null;
         LastExitedAt = Date.now();
 
         SetGameplayCamRelativeHeading(0);
+        //SetEntityHeading(PedId, Heading);
         FreezeEntityPosition(PedId, false);
-        SetPlayerControl(PlayerId(), true);
+        SetPlayerControl(PlayerId_, true);
 
         await Wait(1000);
 
@@ -851,29 +860,31 @@ function UpdateReceivedNightclubs() {
         if (ClubsEnabled) {
             ClubsEnabled = false;
             DebugLog(`ClubsEnabled = ${ClubsEnabled}`);
-            //RemoveClubBlips();
+            RemoveClubBlips();
+            SetTickRate(SlowmodeTickrate);
+            if (LastClub) {
+                JustExitedNightclubNearbyScope(GetNightclubById(LastClub));
+            }
+            if (LastClub2) {
+                JustExitedNightclubEnterScope(GetNightclubById(LastClub2));
+            }
+            if (LastClub3) {
+                JustExitedNightclubEnterScope_2(GetNightclubById(LastClub3));
+            }
+
+            UnloadClubIpls();
+            LoadUnloadedOnStartupIpls();
+
             BeginTextCommandThefeedPost('NightclubsToggled');
             AddTextComponentSubstringPlayerName('~r~disabled~w~');
             EndTextCommandThefeedPostTicker(false, true);
-            LastClub = null;
-            LastClub2 = null;
-            LastClub3 = null;
-            SetTickRate(3000);
-            if (LastCheckpoint) {
-                DeleteCheckpoint(LastCheckpoint);
-                LastCheckpoint = null;
-                DebugLog(`ToggleNightclubs: Removed entrance marker checkpoint. Current checkpoint: ${LastCheckpoint} (Should be null)`);
-            }
-            if (LastGarageCheckpoint) {
-                DeleteCheckpoint(LastGarageCheckpoint);
-                LastGarageCheckpoint = null;
-                DebugLog(`ToggleNightclubs: Removed garage entrance marker checkpoint. Current checkpoint: ${LastGarageCheckpoint} (Should be null)`);
-            }
         } else {
             SetTickRate(null);
             ClubsEnabled = true;
             DebugLog(`ClubsEnabled = ${ClubsEnabled}`);
             SetClubBlips(NightClubs);
+            LoadClubIplsOnStartup();
+            UnloadClubIplsOnStartup();
             BeginTextCommandThefeedPost('NightclubsToggled');
             AddTextComponentSubstringPlayerName('~g~enabled~w~');
             EndTextCommandThefeedPostTicker(false, true);
@@ -942,10 +953,10 @@ function UpdateReceivedNightclubs() {
 
         DoScreenFadeOut();
 
-        StartPlayerTeleport(PlayerId(), Club.coords[0], Club.coords[1], Club.coords[2], 0, true, true, true);
+        StartPlayerTeleport(PlayerId_, Club.coords[0], Club.coords[1], Club.coords[2], 0, true, true, true);
 
-        while (!HasPlayerTeleportFinished(PlayerId())) {
-            await Wait(500);
+        while (!HasPlayerTeleportFinished(PlayerId_)) {
+            await Wait(50);
         }
 
         SetEntityHeading(PlayerPedId(), Club.pedHeading);
@@ -1072,23 +1083,43 @@ function UpdateReceivedNightclubs() {
                 var DistanceFromGarage = (InsideClub.garageEntryCoords ? Get3dDistance(PlayerPedCoords[0], PlayerPedCoords[1], PlayerPedCoords[2], InteriorGarageExitCoords[0], InteriorGarageExitCoords[1], InteriorGarageExitCoords[2]) : 9999999999);
                 if (DistanceFromDoor < 1.1) {
                     if (!IsLoadingScreenActive()) {
-                        if (!IsExitMenuActive()) ActivateExitMenu();
-                    
-                        if ((IsControlJustReleased(2, 201) || IsControlJustReleased(2, 237)) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_1')) {
-                            SetCooldown('EXIT_REQUEST_1', 1000);
-                            NetworkRequestExit(1);
-                            DebugLog(`REQUESTING EXIT 1`);
+                        if (ExitMenuEnabled) {
+                            if (!IsExitMenuActive()) ActivateExitMenu();
+                            
+                            if ((IsControlJustReleased(2, 201) || IsControlJustReleased(2, 237)) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_1')) {
+                                SetCooldown('EXIT_REQUEST_1', 1000);
+                                NetworkRequestExit(1);
+                                DebugLog(`REQUESTING EXIT 1`);
+                            }
+                        } else {
+                            DisplayHelpTextThisFrame("NightclubsNearbyClubExitHelpText");
+
+                            if ((IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_1'))) {
+                                SetCooldown('EXIT_REQUEST_1', 1000);
+                                NetworkRequestExit(1);
+                                DebugLog(`REQUESTING EXIT 1`);
+                            }                        
                         }
                     }
                 } else if (DistanceFromGarage < 2.5) {
                     if (!IsLoadingScreenActive()) {
-                        if (!IsExitMenuActive()) ActivateExitMenu();
+                        if (ExitMenuEnabled) {
+                            if (!IsExitMenuActive()) ActivateExitMenu();
 
-                        if ((IsControlJustReleased(2, 201) || IsControlJustReleased(2, 237)) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_2')) {
-                            SetCooldown("EXIT_REQUEST_2", 1000);
-                            NetworkRequestExit(2);
-                            DebugLog(`REQUESTING EXIT 2`);
-                        }  
+                            if ((IsControlJustReleased(2, 201) || IsControlJustReleased(2, 237)) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_2')) {
+                                SetCooldown("EXIT_REQUEST_2", 1000);
+                                NetworkRequestExit(2);
+                                DebugLog(`REQUESTING EXIT 2`);
+                            }  
+                        } else {
+                            DisplayHelpTextThisFrame("NightclubsNearbyClubExitHelpText");
+
+                            if ((IsControlJustReleased(EnterControlType, EnterControlIndex) && !ExitingClub && !IsCooldownActive('EXIT_REQUEST_2'))) {
+                                SetCooldown('EXIT_REQUEST_2', 1000);
+                                NetworkRequestExit(2);
+                                DebugLog(`REQUESTING EXIT 2`);
+                            }                               
+                        }
                     }                  
                 } else if (IsExitMenuActive()) {
                     RemoveExitMenu();
@@ -1123,7 +1154,7 @@ function UpdateReceivedNightclubs() {
                     }
                 }
 
-                if (CurrentInteriorCheckTickCount >= CurrentInteriorCheckTickFrequency) { 
+                if (CurrentInteriorCheckTickCount >= CurrentInteriorCheckTickFrequency && !EnteringClub && !ExitingClub) { 
                     //DebugLog(`Interior check`);
                     CurrentInteriorCheckTickCount = 0;
                     var CurrentInterior = GetInteriorFromEntity(PlayerPedId());
@@ -1177,4 +1208,8 @@ CommandAliases2.forEach(async alias => {
     ]);
     await Wait(500);
 });
-RegisterCommand('clubdata', () => console.log(CurrentClubData))
+RegisterCommand('nightclubs::tickrate', (source, args) => {
+    if (args[0]) {
+        SetTickRate(parseInt(args[0]));
+    } else SetTickRate(null);
+});
