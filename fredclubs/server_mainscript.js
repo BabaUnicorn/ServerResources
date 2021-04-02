@@ -405,7 +405,7 @@ var NightClubs = [
         garageEntryCoords: [-22.04743003845215, 217.9908905029287, 106.59608459472656],
         garageEnterZone: 2,
         pedHeading_Garage: 180,
-        pedHeading: 30,
+        pedHeading: 250,
         name: "West Vinewood",
         blipTextLabel: "NightclubsBlipName_1",
         description: "It's hard to find a suitably scuzzy location in West Vinewood. This place was actually in pristine condition until we paid some drifters to live in it for a couple months: now it has all the character it needs, and then some.",
@@ -1076,11 +1076,7 @@ function CMD(source, args) {
             if (GetNightclubPlayerIsIn(source)) return SendErrorMessage(source, `Unavailable while inside a nightclub.`);
 
             var Club = NightClubs.find(nc => nc.name.toLowerCase().replace(/ /g, '').includes(args.slice(1).join('').toLowerCase()));
-            if (!Club) return emitNet("chat:addMessage", source, {
-                args: [
-                    "^1Error", "Incorrect nightclub name was specified."
-                ]
-            });
+            if (!Club) return SendErrorMessage(source, 'Incorrect nightclub name was specified.');
 
             emitNet('Nightclubs:Tp', source, JSON.stringify(Club));
         break;
@@ -1228,7 +1224,7 @@ function HOST_CMD(source, args) {
         break;
         case 'lights':
         case 'light':
-            ToggleNightclubLights(club.id);
+        //    ToggleNightclubLights(club.id);
         break;
         case 'notify':
         case 'notification':
@@ -1321,6 +1317,40 @@ function ADMIN_CMD(source, args) {
 
             RemovePlayersSessionBan(parsed, parsed2);
             SendSuccessMessage(source, `Player ${parsed} unbanned from nightclub ${parsed2}`); 
+        break;
+        case 'lights':
+        case 'light':
+            var club = GetNightclubPlayerIsIn(source);
+            if (club) ToggleNightclubLights(club.id); 
+        break;
+        case 'host':
+        case 'changehost':
+        case 'sethost':
+            var club = GetNightclubPlayerIsIn(source);
+            if (!club) SendErrorMessage(source, `you need to be in a club.`);
+            if (!args[1]) return SendErrorMessage(source, `You didn't specify a player.`);
+            var Player = SearchPlayerFromCacheWithName(args.slice(1).join(" "));
+            if (!Player) return SendErrorMessage(source, `No player results for: ${args.slice(1).join(" ")}`);
+            SetPlayerAsSessionHost(Player.id, club.id);
+            SendSuccessMessage(source, `${Player.name} has been set as the host of ${club.name}.`);
+            emitNet('Nightclubs:WarningMessage', Player.id, 'NightclubsHostTransferred', "NightclubsSessionHostTransferred");
+        break;
+        case 'session':
+            var session = GetSession(parseInt(args[1]));
+            if (!session) SendErrorMessage(source, `Incorrect club id...`);
+            var Players = session.Players.map(p => p.fullName).join(', ');
+
+            switch (source) {
+                case 0:
+                    console.log(`PLAYERS: ${session.Players.length}`);
+                    console.log(Players);
+                break;
+                default:
+                    var body = (`~h~PLAYERS: ${session.Players.length}~h~\n`+
+                    Players);
+                    emitNet('Nightclubs:PopupMessage', source, "~p~"+session.Club.name, body);
+                break;
+            }
         break;
     }
 }
