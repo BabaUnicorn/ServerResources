@@ -12,6 +12,7 @@ AddTextEntry("NightclubsOutOfInterior", "You have been removed from the nightclu
 AddTextEntry("NightclubsToggled", "Clubs are now ~a~. Type ~p~/clubs toggle ~w~to undo.");
 AddTextEntry("NightclubsInviteReceived", "You have been invited to a Nightclub. Type ~h~/club accept ~a~~h~ to accept this invite. Type ~h~/club invites~h~ to view all invites.");
 AddTextEntry("NightclubsErrorUnavailable", "This action is currently unavailable. Try again later.");
+AddTextEntry("NightclubsErrorMiscData", "Player host and player count data has not been downloaded...");
 AddTextEntry("NightclubsHostTransferred", "Host transferred");
 AddTextEntry("NightclubsSessionHostTransferred", "You have been set as the session host of this nightclub. Use ~p~/clubhost help ~w~to view all the commands that are available to you.");
 AddTextEntry("NightclubsKicked", "You have been kicked from the nightclub by its current host.");
@@ -33,16 +34,15 @@ AddTextEntry("NightclubsHelpBody", `Nightclubs are located all over Los Santos. 
 `\nHave fun!`);
 AddTextEntry("NightclubsHelpBody_Host", `~p~/clubhost set [player name] ~w~- Make someone else a host (removes your privileges)\n`+
 `~p~/clubhost kick [player name] ~w~- Kick someone from the nightclub\n`+
-`~p~/clubhost lights ~w~- Toggle lights inside the nightclub\n`+
+//`~p~/clubhost lights ~w~- Toggle lights inside the nightclub\n`+
 `~p~/clubhost notify [message] ~w~- Send everyone inside club a message\n`+
 `~p~/clubhost help ~w~- Shows this screen\n`+
 `~HUD_COLOUR_GREY~Note: Leaving the nightclub will remove you as the host and choose someone else.`);
 
 var MyName = GetThisScriptName();
-var Wait = (ms) => new Promise(res => setTimeout(res, ms ? ms : DrawTickRate));
+var DrawWait = (ms) => new Promise(res => setTimeout(res, ms ? ms : 0));
 var ClubBlips = [];
-var InteriorBlips = []
-var DrawTickRate = 3;
+var InteriorBlips = [];
 var LoadingScreenActive = false;
 var DebugLogsEnabled = false;
 var CurrentClubBlip = null;
@@ -183,7 +183,7 @@ async function SetClubBlips(Clubs) {
 
     Clubs.forEach(async c => {
         SetBlipForClub(c);
-        await Wait();
+        await DrawWait(0);
     });
 
     return true;
@@ -193,7 +193,7 @@ function RemoveClubBlips() {
     ClubBlips.forEach(async club => {
         RemoveBlip(club);
         DebugLog(`Removing club blip ${club}`);
-        await Wait();
+        await DrawWait(0);
     });
     ClubBlips.length = 0;
 }
@@ -205,7 +205,7 @@ async function StartupLoadingScreen() {
 	SetPlayerControl(PlayerId(), false);
 
     while (!IsPlayerSwitchInProgress()) {
-        await Wait(0);
+        await DrawWait(0);
     }
 
     DebugLog(`Loading screen started`);
@@ -219,7 +219,7 @@ async function StartupLoadingScreen() {
 		DisableControlAction(0, 2, true); // camera movement left right
 		DisableControlAction(0, 257, true); // attack2
 
-		await Wait(0);
+		await DrawWait(0);
 	}*/
 }
 
@@ -338,7 +338,7 @@ async function AddTextComponentsFromArray (Arr) {
 					}
 				break;
 			}
-			await Wait(10);
+			await DrawWait(10);
 		});
 	}
 }
@@ -351,7 +351,7 @@ async function ActivateExitMenu() {
 	RequestStreamedTextureDict('commonmenu');
 	var Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
 	while (!HasStreamedTextureDictLoaded('commonmenu') || !HasScaleformMovieLoaded(Button)) {
-		await Wait(0);
+		await DrawWait(0);
 	}
 
 	ExitMenuIsActive = true;
@@ -401,7 +401,7 @@ async function ActivateExitMenu() {
 				StopDisplaying();
 			}*/
 		}
-		await Wait();
+		await DrawWait(0);
 	}
 }
 
@@ -413,12 +413,12 @@ function IsExitMenuActive() {
 	return ExitMenuIsActive;
 }
 
-async function PopupMessage(Header = 'alert', BodyText1 = '...', BodyText2 = '...', WaitBeforeAllowingConfirm = 0, ButtonText = GetLabelText('IB_OK'), EnableMouse = true, UseTextEntries = false, HeaderTextComponents, BodyTextComponents, BodyText2Components) {
+async function PopupMessage(Header = 'alert', BodyText1 = '...', BodyText2 = '', WaitBeforeAllowingConfirm = 0, ButtonText = GetLabelText('IB_OK'), EnableMouse = true, UseTextEntries = false, HeaderTextComponents, BodyTextComponents, BodyText2Components) {
 	DebugLog(`PopupMessage: Called`);
 	var Popup_Body = RequestScaleformMovie("POPUP_WARNING"),
 	Popup_Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
 	while (!HasScaleformMovieLoaded(Popup_Body) || !HasScaleformMovieLoaded(Popup_Button)) { 
-		await Wait(100); 
+		await DrawWait(100); 
 	}
  
 	PopupIsActive = true;
@@ -494,7 +494,7 @@ async function PopupMessage(Header = 'alert', BodyText1 = '...', BodyText2 = '..
 			}
 		}
 
-		await Wait();
+		await DrawWait(0);
 	}
 }
 
@@ -503,7 +503,7 @@ async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingC
 	var ScoreBoard = RequestScaleformMovie("MP_ONLINE_LIST_CARD"),
 	Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
     while (!HasScaleformMovieLoaded(ScoreBoard) || !HasScaleformMovieLoaded(Button)) {
-        await Wait();
+        await DrawWait(0);
     }
 
 	ScoreboardIsActive = true;
@@ -530,7 +530,7 @@ async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingC
 		PushScaleformMovieFunctionParameterString(Slot.Right_Text || "");
 		EndScaleformMovieMethod();
 
-		await Wait(50);
+		await DrawWait(50);
 	});
 
 	(function SetupButton() {
@@ -581,7 +581,7 @@ async function Scoreboard (Title = 'title', Slots = [{},{}], WaitBeforeAllowingC
 			}
 		}
 
-		await Wait();
+		await DrawWait(0);
 	}
 }
 
@@ -591,7 +591,7 @@ async function Bigfeed (Title = ' ', Subtitle = '', Body = '', txd, txn, WaitBef
 	Button = RequestScaleformMovie('INSTRUCTIONAL_BUTTONS');
 
 	while (!HasScaleformMovieLoaded(BigFeed) || !HasScaleformMovieLoaded(Button)) {
-		await Wait(30);
+		await DrawWait(30);
 	}
 
 	BigfeedIsActive = true;
@@ -644,7 +644,7 @@ async function Bigfeed (Title = ' ', Subtitle = '', Body = '', txd, txn, WaitBef
 				console.log(`^1Texture dict ${txd} didn't load in time...`);
 				break;
 			}
-			await Wait();
+			await DrawWait(0);
 		}
 		BeginScaleformMovieMethod(BigFeed, "SET_BIGFEED_IMAGE");
 		ScaleformMovieMethodAddParamPlayerNameString(txd);
@@ -701,7 +701,7 @@ async function Bigfeed (Title = ' ', Subtitle = '', Body = '', txd, txn, WaitBef
 			}
 		}		
 
-		await Wait();
+		await DrawWait(0);
 	}
 }
 
@@ -762,7 +762,7 @@ async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Sl
 	var Button = RequestScaleformMovie("INSTRUCTIONAL_BUTTONS");
 	var Scaleform = RequestScaleformMovie('SC_LEADERBOARD');
 	while (!HasScaleformMovieLoaded(Button) || !HasScaleformMovieLoaded(Scaleform)) {
-		await Wait();
+		await DrawWait(0);
 	}
 
 	Scoreboard_2IsActive = true;
@@ -780,7 +780,7 @@ async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Sl
 			ScaleformMovieMethodAddParamPlayerNameString(button.text);
 			EndScaleformMovieMethod();
 
-			await Wait(0);
+			await DrawWait(0);
 		});
  
 		BeginScaleformMovieMethod(Button, "DRAW_INSTRUCTIONAL_BUTTONS");
@@ -797,7 +797,7 @@ async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Sl
 	BeginScaleformMovieMethod(Scaleform, "SET_TITLE");
 	Titles.forEach(async title => {
 		ScaleformMovieMethodAddParamPlayerNameString(title);
-		await Wait(0);
+		await DrawWait(0);
 	});
 	EndScaleformMovieMethod();
  
@@ -820,7 +820,7 @@ async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Sl
 		ScaleformMovieMethodAddParamPlayerNameString(slot.text10 || "");
 		EndScaleformMovieMethod();
 
-		await Wait(0);
+		await DrawWait(0);
 	});
  
 	var KeepDisplaying = true;
@@ -850,7 +850,7 @@ async function Scoreboard_2(Header = '', Titles = Scoreboard_2_DefaultTitles, Sl
 			}
 		}
  
-		await Wait();
+		await DrawWait(0);
 	}
 }
 
@@ -878,7 +878,7 @@ async function FrontendBlipInfo(title = 'title here', txd = 'club_delperro', txn
 		ScaleformMovieMethodAddParamBool(slot.ticked ? true : false);
 		EndScaleformMovieMethod();
 
-		await Wait(2);
+		await DrawWait(2);
 	});
 
     BeginScaleformMovieMethodOnFrontend("SET_COLUMN_TITLE");
@@ -923,7 +923,7 @@ async function WarningMessage(HeaderTextLabel, BodyTextLabel = 'NightclubsServer
 			KeepLoop = false;
 		}
 
-		await Wait();
+		await DrawWait(0);
 	}
 }
 
@@ -962,7 +962,7 @@ async function InviteNotification(PlayerInfo, ClubInfo, InviteId) {
 				console.log(`Ped headshot didn't load in time`);
 				break;
 			}
-			await Wait(0);
+			await DrawWait(0);
 		}
 
 		var TxdString = GetPedheadshotTxdString(handle);
@@ -977,7 +977,7 @@ async function InviteNotification(PlayerInfo, ClubInfo, InviteId) {
 	var ticks = 0;
 	while (!HasStreamedTextureDictLoaded(txd) && ticks < 300) {
 		ticks += 1;
-		await Wait(0);
+		await DrawWait(0);
 	}
 
 	BeginTextCommandThefeedPost('NightclubsInviteReceived');
@@ -1016,8 +1016,7 @@ RegisterCommand('nightclubs::safezone', async () => {
 		while (SafezoneShown) {
 			var Size = GetSafeZoneSize();
 			DrawRect(0.5, 0.5, Size, Size, 0, 0, 0, 100);
-			await Wait(0);
+			await DrawWait(0);
 		}
 	}
-
 });
