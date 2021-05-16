@@ -165,7 +165,7 @@ RegisterCommand("ban", (s, a) => {
             let obj = CreateIdentifierObj(_source, user, reason);
             let name = GetPlayerName(user);
             let sname = GetPlayerName(_source);
-            BanPlayer(_source, user, obj.license, obj, reason);
+            BanPlayer(sname, user, obj.license, obj, reason);
             console.log(`[${_source}] ${sname}} has banned player [${user}] ${name} with license ${obj.license} and reason ${reason}.`);
             emitNet("chat:addMessage", -1, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", `^1^*[${user}] ${name} has been banned.`]});
         }
@@ -225,7 +225,7 @@ RegisterCommand("baninfo", (s, a) => {
             emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", `^*This license is not banned.`]});
         } else {
             let data = UnpackBanData(license);
-            emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", `^*Ban info: Banned by: ${data.bannedBy} Date: ${data.date} Reason: ${data.reason} Name: ${data.name} License: ${data.license} IP: ${data.ip} Discord: ${data.discord} XboxLive: ${data.xbl} Live: ${data.live} FiveM: ${data.fivem}`]});
+            emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN INFO^r", `^*^_Banned by: ^r${data.bannedBy} ^*^_Date: ^r${data.date} ^*^_Reason: ^r${data.reason} ^*^_Name: ^r${data.name} ^*^_License: ^r${data.license} ^*^_IP: ^r${data.ip} ^*^_Discord: ^r${data.discord} ^*^_XboxLive: ^r${data.xbl} ^*^_Live: ^r${data.live} ^*^_FiveM: ^r${data.fivem}`]});
         }
     }
 }, true);
