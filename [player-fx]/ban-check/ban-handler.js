@@ -225,7 +225,7 @@ RegisterCommand("baninfo", (s, a) => {
             emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", `^*This license is not banned.`]});
         } else {
             let data = UnpackBanData(license);
-            emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", `^*${data}`]});
+            emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", `^*Ban info: Banned by: ${data.bannedBy} Date: ${data.date} Reason: ${data.reason} Name: ${data.name} License: ${data.license} IP: ${data.ip} Discord: ${data.discord} XboxLive: ${data.xbl} Live: ${data.live} FiveM: ${data.fivem}`]});
         }
     }
 }, true);
