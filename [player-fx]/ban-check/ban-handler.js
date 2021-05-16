@@ -189,7 +189,7 @@ RegisterCommand("licenseban", (s, a) => {
             console.log(`Banned player license ${license} with reason ${reason}.`);
         }
     } else if (_s >= 1) {
-        if(!user || !exports["identity-handler"]["IsIdActive"](user)) {
+        if(!license) {
             emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", "^*Please specify a valid Rockstar license."]});
         } else if (!reason) {
             emitNet("chat:addMessage", _s, { color: [255, 255, 255], multiline: true, args: ["^1^*BAN^r", "^*Please specify a reason."]});
