@@ -7,6 +7,10 @@ on("onResourceStart", (name) => {
 });
 
 // player joining event and identity creation handler, couldnt be done using "playerConnecting" because netID is needed.
+
+// fix for booba
+RegisterNetEvent("playerJoining");
+
 on("playerJoining", (old) => {
     
     // parameters
